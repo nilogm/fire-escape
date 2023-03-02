@@ -45,10 +45,9 @@ class Timer
         this.timerEvent = this.scene.time.addEvent({
             delay: duration,
             callback: () => {
-                this.label.text = "0"
+                this.seconds = 0
                 this.stop()
-                if (this.finishedCallback)
-                    this.finishedCallback()
+                this.finishedCallback(this.scene)
             }
         })
     }
