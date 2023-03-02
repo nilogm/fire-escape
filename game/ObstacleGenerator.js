@@ -33,11 +33,17 @@ class ObstacleGenerator{
     generate(){
         var x = Phaser.Math.Between(this.minX, this.maxX);
         var y = Phaser.Math.Between(this.minY, this.maxY);
-
-        var obstacle = bombs.create(x, y, 'bomb')
-        obstacle.setTint(0xff0000)
-        obstacle.setCollideWorldBounds(true)
-        this.killTimer(obstacle)
+        var caution = this.scene.add.image(x, y,'caution').setScale(0.07);
+        this.scene.time.addEvent({
+            delay: 1000,
+            callback: () => {
+                caution.destroy()
+                var obstacle = bombs.create(x, y, 'bomb').setScale(2).refreshBody();
+                obstacle.setTint(0xff0000)
+                obstacle.setCollideWorldBounds(true)
+                this.killTimer(obstacle)
+            }
+        })
     }
 
     killTimer(bomb){

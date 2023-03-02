@@ -4,6 +4,7 @@ class Example1 extends Phaser.Scene {
     }
 
     preload(){
+        this.load.image('caution', 'assets/caution.png')
         this.load.image('ground', 'assets/ground2.png')
         this.load.image('circle', 'assets/circle.png')
         this.load.image('bomb', 'assets/bomb.png')
@@ -58,8 +59,8 @@ class Example1 extends Phaser.Scene {
     update(delta){
         if (gameOver)
         {
-            this.gameOverText.visible = true
             this.gameOverText.setPosition(this.player.x, this.player.y)
+            this.gameOverText.visible = true
 
             this.endGame()
             return
