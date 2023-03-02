@@ -12,12 +12,12 @@ var config = {
             debug : false
         }
     },
-    // scene: {
-    //     preload: preload,
-    //     create: create,
-    //     update: update
-    // }
+ 
     scene: [Example1]
 };
 
 var game = new Phaser.Game(config);
+var bombs;
+var score = 0;
+var gameOver = false;
+var gameOverTxt;

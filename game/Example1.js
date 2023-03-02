@@ -3,9 +3,11 @@ class Example1 extends Phaser.Scene {
         super({key:"Example1"});
     }
 
+
     preload(){
         this.load.image('ground', 'assets/ground2.png');
         this.load.image('circle', 'assets/circle.png');
+        this.load.image('bomb', 'assets/bomb.png');
     }
 
     create(){
@@ -17,8 +19,9 @@ class Example1 extends Phaser.Scene {
 
         this.player = this.physics.add.sprite(350, 350, 'circle');
         this.player.setScale(0.05);
-
+        
         this.cameras.main.setBounds(0, 0, this.xLimit, this.yLimit);
+        this.player.setCollideWorldBounds(true);
         
         this.cursors = this.input.keyboard.createCursorKeys();
 
@@ -32,9 +35,20 @@ class Example1 extends Phaser.Scene {
         this.clock.addEvent(this.timerEvent);
 
         this.seconds = 0;
+
+        bombs = this.physics.add.group();
+        this.physics.add.collider(this.player, bombs, this.hitBomb, null, this);
+        
+        var bomb = bombs.create(200, 200, 'bomb');
+        bomb.setCollideWorldBounds(true);
     }
 
     update(delta){
+        if (gameOver)
+        {
+            gameOverTxt = this.add.text(this.player.x, this.player.y,"GAME OVER",{font: '40px Arial', fill: '#FFFFFF', align: 'center'})
+            return;
+        }
         this.clock.update(Date.now, delta);
         console.log(this.timerEvent.getProgress());
 
@@ -50,6 +64,14 @@ class Example1 extends Phaser.Scene {
     onEnd(){
         this.seconds++;
     }
+
+    hitBomb (player, bomb)
+    {
+        this.physics.pause();
+        player.setTint(0xff0000);
+        gameOver = true;
+    }
+
 
     movement(){
         if (this.cursors.left.isDown && this.player.x >= 0 && !this.cursors.right.isDown) 
