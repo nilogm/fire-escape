@@ -29,7 +29,8 @@ class Timer
             this.seconds = remaining / 1000
         }
 
-        this.label.text = this.seconds.toFixed(2)
+        if (this.label)
+            this.label.text = this.seconds.toFixed(2)
     }
 
     /**
