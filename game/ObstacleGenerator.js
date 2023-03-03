@@ -35,6 +35,7 @@ class ObstacleGenerator{
         event.setTimer(()=>{
             caution.destroy()
             this.createObstacle(x, y)
+            this.scene.events.emit('shake')
         }, 1000)
     }
 

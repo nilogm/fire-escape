@@ -28,6 +28,9 @@ class Example1 extends Phaser.Scene {
         // Cameras
         this.cameras.main.setBounds(0, 0, this.xLimit, this.yLimit)
         this.cameras.main.zoomTo(2, timerDuration)
+
+        // Shake Event
+        this.events.on('shake', ()=>{this.cameras.main.shake(100, 0.0025)})
         
         // Controls
         this.cursors = this.input.keyboard.createCursorKeys()
