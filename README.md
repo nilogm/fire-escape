@@ -1,0 +1,22 @@
+# To do List
+- [ ] Sprites/animações:
+  - [ ] Obstáculos + sombras
+  - [ ] Player
+  - [ ] Level
+  - [ ] Porta e chave
+- [ ] FX:
+  - [ ] Fumaça nos cantos da tela
+  - [ ] Iluminação do fogo
+- [ ] Gerador de níveis aleatório:
+  - [ ] Saída nas paredes (caso seja uma porta)
+  - [ ] Chave aparece após certo período de tempo
+  - [ ] Maior frequência de obstáculos/menos tempo de aviso
+- [ ] Colisões melhores
+- [ ] Indicador de movimento (caso haja colisão, começar a perder vida por falta de movimento)
+- [ ] Extintor de incêndio (apagar obstáculos):
+  - [ ] Gerado automaticamente ao entrar no mapa (no máximo 3)
+- [ ] Sounds:
+  - [ ] Chave caindo
+  - [ ] Obstáculo caindo
+  - [ ] Porta abrindo
+  - [ ] Fogo + fogging
