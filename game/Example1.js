@@ -40,15 +40,23 @@ class Example1 extends Phaser.Scene {
         this.gameOverText.visible = false
 
         // Bomb Generator
-        this.frequency = 2000
+        this.frequency = 500
         new ObstacleGenerator(this).setGenerator([0, 0, 800, 600], this.frequency)
 
         // Exit Door
-        var exitDoor = this.physics.add.sprite(600, 400, 'door').setScale(0.3).setCollideWorldBounds(true).setImmovable(true)
+        var doorOffset = 40
+        var doorX = Phaser.Math.Between(0 + doorOffset, background.displayWidth - doorOffset);
+        var doorY = Phaser.Math.Between(0 + doorOffset, background.displayHeight - doorOffset);
+        var exitDoor = this.physics.add.sprite(doorX, doorY, 'door').setScale(0.3).setCollideWorldBounds(true).setImmovable(true)
         this.physics.add.collider(this.player, exitDoor, this.exitLevel, null, this)
 
         // Key
-        this.key = this.physics.add.sprite(70, 500, 'key').setScale(0.1).setCollideWorldBounds(true)
+        var keyX, keyY, keyOffset = 40
+        do{
+            keyX = Phaser.Math.Between(0 + keyOffset, background.displayWidth - keyOffset)
+            keyY = Phaser.Math.Between(0 + keyOffset, background.displayHeight - keyOffset)
+        } while(keyX > doorX - 20 && keyX < doorX + 20 && keyY > doorY - 20 && keyY < doorY + 20)
+        this.key = this.physics.add.sprite(keyX, keyY, 'key').setScale(0.1).setCollideWorldBounds(true)
         this.physics.add.collider(this.player, this.key, this.getKey, null, this)
 
         this.hasKey = false
