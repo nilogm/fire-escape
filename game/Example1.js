@@ -10,6 +10,8 @@ class Example1 extends Phaser.Scene {
         this.load.image('bomb', 'assets/bomb.png')
         this.load.image('door', 'assets/door.png')
         this.load.image('key', 'assets/key.png')
+        this.load.audio('chave_caindo', 'assets/sound/chave_caindo.wav')
+        this.load.audio('porta_abrindo','assets/sound/porta_abrindo.wav')
     }
 
     create(){
@@ -61,7 +63,7 @@ class Example1 extends Phaser.Scene {
         exitDoor.obj.setScale(0.3).setImmovable(true)
 
         // Key
-        this.setKey(background, doorX, doorY, 4000)
+        this.setKey(background, doorX, doorY, 4000,this.sound.add("chave_caindo"))
 
         this.hasKey = false
         this.keyText = this.add.text(0, 0, "Requires Key!", {font: '30px Arial', fill: '#FFFF44', align: 'center'})
@@ -122,7 +124,7 @@ class Example1 extends Phaser.Scene {
         }
     }
 
-    setKey(background, doorX, doorY, duration=0){
+    setKey(background, doorX, doorY, duration=0,keysound){
         var keyX, keyY, keyOffset = 40
         do{
             keyX = Phaser.Math.Between(0 + keyOffset, background.displayWidth - keyOffset)
@@ -132,8 +134,12 @@ class Example1 extends Phaser.Scene {
         var timer = new Timer(this)
         timer.setTimer(()=>{
             this.key = new Interactable(this, 'key')
-            this.key.create(this.player, ()=>{this.getKey()}, keyX, keyY)
-            this.key.obj.setScale(0.1)
+            this.key.create(this.player, ()=>{
+                this.getKey();
+                this.sound.add("porta_abrindo").play()
+            }, keyX, keyY)
+            this.key.obj.setScale(0.1).refreshBody()
+            keysound.play()
         }, duration)
     }
 
