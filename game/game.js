@@ -18,6 +18,10 @@ var config = {
 
 var game = new Phaser.Game(config);
 var bombs;
-var score = 0;
+
 var gameOver = false;
-var gameOverTxt;
+
+var timerDuration = 20000
+var velocity = 400
+var maxHealth = 100
+var movementPenalty = 0.025

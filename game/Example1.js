@@ -8,65 +8,79 @@ class Example1 extends Phaser.Scene {
         this.load.image('ground', 'assets/ground2.png')
         this.load.image('circle', 'assets/circle.png')
         this.load.image('bomb', 'assets/bomb.png')
+        this.load.image('door', 'assets/door.png')
+        this.load.image('key', 'assets/key.png')
     }
 
     create(){
-        this.background = this.add.image(400,400,'ground')
-        this.background.x = this.background.displayWidth / 2
-        this.background.y = this.background.displayHeight / 2
-        this.xLimit = this.background.displayWidth
-        this.yLimit = this.background.displayHeight
+        // Background Image
+        var background = this.add.image(400,400,'ground')
+        background.x = background.displayWidth / 2
+        background.y = background.displayHeight / 2
+        this.xLimit = background.displayWidth
+        this.yLimit = background.displayHeight
 
+        // Player
         this.player = this.physics.add.sprite(350, 350, 'circle')
         this.player.setScale(0.05)
-        
-        this.cameras.main.setBounds(0, 0, this.xLimit, this.yLimit)
         this.player.setCollideWorldBounds(true)
         
+        // Cameras
+        this.cameras.main.setBounds(0, 0, this.xLimit, this.yLimit)
+        
+        // Controls
         this.cursors = this.input.keyboard.createCursorKeys()
 
         // Bombs
         bombs = this.physics.add.group()
         this.physics.add.collider(this.player, bombs, this.hitBomb, null, this)
 
-        this.gameOverText = this.add.text(0, 0, "GAME OVER" , {font: '40px Arial', fill: '#FFFFFF', align: 'center'})
+        // Game Over Text
+        this.gameOverText = this.add.text(0, 0, "GAME OVER!" , {font: '40px Arial', fill: '#FFFFFF', align: 'center'})
         this.gameOverText.visible = false
 
         // Bomb Generator
         this.frequency = 2000
-        this.bombGenerator = new ObstacleGenerator(this)
-        this.bombGenerator.setGenerator([0, 0, 800, 600], this.frequency)
+        new ObstacleGenerator(this).setGenerator([0, 0, 800, 600], this.frequency)
+
+        // Exit Door
+        var exitDoor = this.physics.add.sprite(600, 400, 'door').setScale(0.3).setCollideWorldBounds(true).setImmovable(true)
+        this.physics.add.collider(this.player, exitDoor, this.exitLevel, null, this)
+
+        // Key
+        this.key = this.physics.add.sprite(70, 500, 'key').setScale(0.1).setCollideWorldBounds(true)
+        this.physics.add.collider(this.player, this.key, this.getKey, null, this)
+
+        this.hasKey = false
+        this.keyText = this.add.text(0, 0, "Requires Key!", {font: '30px Arial', fill: '#FFFF44', align: 'center'})
+        this.keyText.visible = false
 
         // Timer
-        this.timeText = this.add.text(30, 30, "", {font: '30px Arial', fill: '#FFFFFF', align: 'center'}).setScrollFactor(0)
+        var timeText = this.add.text(30, 30, "", {font: '30px Arial', fill: '#FFFFFF', align: 'center'}).setScrollFactor(0)
+        var endLevelText = this.add.text(30, 80, "Timer ran out!", {font: '40px Arial', fill: '#FF0000', align: 'center'}).setScrollFactor(0)
+        endLevelText.visible = false
 
-        this.endLevelText = this.add.text(30, 80, "Timer ran out!", {font: '40px Arial', fill: '#FF0000', align: 'center'}).setScrollFactor(0)
-        this.endLevelText.visible = false
-
-        this.duration = 20000
-        this.timer = new Timer(this, this.timeText)
-        this.timer.setTimer(this.onEnd, this.duration)
+        this.timer = new Timer(this, timeText)
+        this.timer.setTimer(()=>{endLevelText.visible = true}, timerDuration)
 
         // Stats
-        this.healthCapacity = 100
-        this.health = this.healthCapacity
-        this.penaltyRate = 0.025;
+        this.health = maxHealth
         this.healthText = this.add.text(30, 120, this.health, {font: '30px Arial', fill: '#FFFFFF', align: 'center'}).setScrollFactor(0)
-
-        this.velocity = 400
     }
 
     update(delta){
         if (gameOver)
         {
-            this.gameOverText.setPosition(this.player.x, this.player.y)
+            this.gameOverText.setPosition(this.player.x - 115, this.player.y - 80)
             this.gameOverText.visible = true
 
-            this.endGame()
+            this.time.paused = true
             return
         }
 
         this.timer.update(delta)
+        if (this.keyTextTimer)
+            this.keyText.setPosition(this.player.x - 90, this.player.y - 80)
 
         this.healthText.setText(this.health)
 
@@ -75,25 +89,34 @@ class Example1 extends Phaser.Scene {
         this.cameras.main.centerOn(this.player.x, this.player.y)
     }
 
-    endGame(){
-        this.timer.stop()
-        this.bombGenerator.stop()
-    }
-
-    onEnd(scene){
-        scene.endLevelText.visible = true
-    }
-
-    hitBomb (player, bomb)
+    hitBomb(player, bomb)
     {
         this.physics.pause()
         player.setTint(0xff0000)
         gameOver = true
     }
 
+    exitLevel(){
+        if (this.hasKey){
+            this.scene.restart()
+        }
+        else {
+            if (this.keyTextTimer)
+                this.keyTextTimer.stop()
+            this.keyTextTimer = new Timer(this)
+            this.keyText.visible = true
+            this.keyTextTimer.setTimer(()=>{this.keyText.visible=false;this.keyTextTimer = null}, 2000)
+        }
+    }
+
+    getKey(){
+        this.hasKey = true
+        this.key.destroy()
+    }
+
     updateHealth(amount){
-        if (this.health + amount > this.healthCapacity)
-            this.health = this.healthCapacity
+        if (this.health + amount > maxHealth)
+            this.health = maxHealth
         else if (this.health + amount < 0)
             this.health = 0
         else 
@@ -102,22 +125,22 @@ class Example1 extends Phaser.Scene {
 
     movement(){
         if (this.cursors.left.isDown && this.player.x >= 0 && !this.cursors.right.isDown) 
-            this.player.setVelocityX(-this.velocity)
+            this.player.setVelocityX(-velocity)
         else if (this.cursors.right.isDown && this.player.x <= this.xLimit && !this.cursors.left.isDown)
-            this.player.setVelocityX(this.velocity)
+            this.player.setVelocityX(velocity)
         else 
             this.player.setVelocityX(0)
         
         if (this.cursors.up.isDown && this.player.y >= 0 && !this.cursors.down.isDown)
-            this.player.setVelocityY(-this.velocity)
+            this.player.setVelocityY(-velocity)
         else if (this.cursors.down.isDown && this.player.y <= this.yLimit && !this.cursors.up.isDown)
-            this.player.setVelocityY(this.velocity)
+            this.player.setVelocityY(velocity)
         else
             this.player.setVelocityY(0)
 
         if (this.cursors.up.isDown || this.cursors.right.isDown || this.cursors.left.isDown || this.cursors.down.isDown)
-            this.updateHealth(this.penaltyRate * this.healthCapacity)
+            this.updateHealth(movementPenalty * maxHealth)
         else
-            this.updateHealth(2 * -this.penaltyRate * this.healthCapacity)
+            this.updateHealth(2 * -movementPenalty * maxHealth)
     }
 }

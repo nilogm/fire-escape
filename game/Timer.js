@@ -4,7 +4,7 @@ class Timer
     scene
 
     /** @type {Phaser.GameObjects.Text} */
-    label
+    timerLabel
 
     /** @type {Phaser.Time.TimerEvent} */
     timerEvent
@@ -14,12 +14,12 @@ class Timer
     /**
 	 * 
 	 * @param {Phaser.Scene} scene 
-	 * @param {Phaser.GameObjects.Text} label 
+	 * @param {Phaser.GameObjects.Text} timerLabel 
 	 */
-    constructor(scene, label)
+    constructor(scene, timerLabel=null)
 	{
 		this.scene = scene
-		this.label = label
+		this.timerLabel = timerLabel
 	}
 
     update(delta){
@@ -29,26 +29,27 @@ class Timer
             this.seconds = remaining / 1000
         }
 
-        if (this.label)
-            this.label.text = this.seconds.toFixed(2)
+        if (this.timerLabel)
+            this.timerLabel.text = this.seconds.toFixed(2)
     }
 
     /**
 	 * @param {() => void} callback
 	 * @param {number} duration 
 	 */
-    setTimer(callback, duration=1000){
+    setTimer(callback, duration=1000, loop=false){
         this.seconds = 0
         this.duration = duration
 
         this.stop()
-        this.finishedCallback = callback
         this.timerEvent = this.scene.time.addEvent({
             delay: duration,
+            loop: loop,
             callback: () => {
                 this.seconds = 0
-                this.stop()
-                this.finishedCallback(this.scene)
+                if (!loop)
+                    this.stop()
+                callback()
             }
         })
     }
