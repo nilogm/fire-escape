@@ -47,8 +47,9 @@ class Example1 extends Phaser.Scene {
         var doorOffset = 40
         var doorX = Phaser.Math.Between(0 + doorOffset, background.displayWidth - doorOffset);
         var doorY = Phaser.Math.Between(0 + doorOffset, background.displayHeight - doorOffset);
-        var exitDoor = this.physics.add.sprite(doorX, doorY, 'door').setScale(0.3).setCollideWorldBounds(true).setImmovable(true)
-        this.physics.add.collider(this.player, exitDoor, this.exitLevel, null, this)
+        var exitDoor = new Interactable(this, 'door')
+        exitDoor.create(this.player, ()=>{this.exitLevel()}, doorX, doorY)
+        exitDoor.obj.setScale(0.3).setImmovable(true)
 
         // Key
         var keyX, keyY, keyOffset = 40
@@ -56,8 +57,9 @@ class Example1 extends Phaser.Scene {
             keyX = Phaser.Math.Between(0 + keyOffset, background.displayWidth - keyOffset)
             keyY = Phaser.Math.Between(0 + keyOffset, background.displayHeight - keyOffset)
         } while(keyX > doorX - 20 && keyX < doorX + 20 && keyY > doorY - 20 && keyY < doorY + 20)
-        this.key = this.physics.add.sprite(keyX, keyY, 'key').setScale(0.1).setCollideWorldBounds(true)
-        this.physics.add.collider(this.player, this.key, this.getKey, null, this)
+        this.key = new Interactable(this, 'key')
+        this.key.create(this.player, ()=>{this.getKey()}, keyX, keyY)
+        this.key.obj.setScale(0.1)
 
         this.hasKey = false
         this.keyText = this.add.text(0, 0, "Requires Key!", {font: '30px Arial', fill: '#FFFF44', align: 'center'})
@@ -119,7 +121,7 @@ class Example1 extends Phaser.Scene {
 
     getKey(){
         this.hasKey = true
-        this.key.destroy()
+        this.key.obj.destroy()
     }
 
     updateHealth(amount){
