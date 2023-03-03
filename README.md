@@ -16,7 +16,7 @@
 - [ ] Extintor de incêndio (apagar obstáculos):
   - [ ] Gerado automaticamente ao entrar no mapa (no máximo 3)
 - [ ] Sounds:
-  - [ ] Chave caindo
+  - [x] Chave caindo
   - [ ] Obstáculo caindo
-  - [ ] Porta abrindo
+  - [x] Porta abrindo
   - [ ] Fogo + fogging
