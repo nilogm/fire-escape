@@ -31,24 +31,26 @@ class Example1 extends Phaser.Scene {
 
         // Fade Effect
         this.cameras.main.fade(timerDuration)
-
+        
         // Shake Event
         this.events.on('shake', ()=>{this.cameras.main.shake(100, 0.0025)})
         
         // Controls
         this.cursors = this.input.keyboard.createCursorKeys()
-
+        
         // Bombs
         bombs = this.physics.add.group()
         this.physics.add.collider(this.player, bombs, this.hitBomb, null, this)
-
+        
         // Game Over Text
-        this.gameOverText = this.add.text(0, 0, "GAME OVER!" , {font: '40px Arial', fill: '#FFFFFF', align: 'center'})
+        this.gameOverText = this.add.text(0, 0, "GAME OVER!", {font: '40px Arial', fill: '#FF0000', align: 'center'}).setScrollFactor(0)
         this.gameOverText.visible = false
+        this.gameOverText.setDepth(1)
+        this.gameOverText.setPosition(400 - this.gameOverText.getCenter().x, 300 - this.gameOverText.getCenter().y)
+        this.gameOverText.setShadow(0, 5, '#000000', 4)
 
         // Bomb Generator
-        this.frequency = 500
-        new ObstacleGenerator(this).setGenerator([0, 0, 800, 600], this.frequency)
+        new ObstacleGenerator(this).setGenerator([0, 0, 800, 600], bombFrequency)
 
         // Exit Door
         var doorOffset = 40
@@ -70,6 +72,7 @@ class Example1 extends Phaser.Scene {
 
         this.hasKey = false
         this.keyText = this.add.text(0, 0, "Requires Key!", {font: '30px Arial', fill: '#FFFF44', align: 'center'})
+        this.keyText.setShadow(0, 5, '#000000', 4)
         this.keyText.visible = false
 
         // Timer
@@ -86,13 +89,7 @@ class Example1 extends Phaser.Scene {
     }
 
     update(delta){
-        if (gameOver)
-        {
-            this.gameOverText.setPosition(this.player.x - 115, this.player.y - 80)
-            this.gameOverText.visible = true
-            
-            this.time.paused = true
-        }
+        if (gameOver){ return }
 
         this.timer.update(delta)
         if (this.keyTextTimer)
@@ -109,18 +106,27 @@ class Example1 extends Phaser.Scene {
     {
         this.physics.pause()
         player.setTint(0xff0000)
+        this.endGame()
         gameOver = true
+    }
+
+    endGame(){
+        this.gameOverText.visible = true
+        this.cameras.main.resetFX()
+        this.cameras.main.fade(2000)
+        this.time.paused = true
     }
 
     exitLevel(){
         if (this.hasKey)
             this.scene.restart()
-
-        if (this.keyTextTimer)
-            this.keyTextTimer.stop()
-        this.keyTextTimer = new Timer(this)
-        this.keyText.visible = true
-        this.keyTextTimer.setTimer(()=>{this.keyText.visible=false;this.keyTextTimer = null}, 2000)
+        else{   
+            if (this.keyTextTimer)
+                this.keyTextTimer.stop()
+            this.keyTextTimer = new Timer(this)
+            this.keyText.visible = true
+            this.keyTextTimer.setTimer(()=>{this.keyText.visible=false;this.keyTextTimer = null}, 2000)
+        }
     }
 
     getKey(){
