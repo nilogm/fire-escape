@@ -61,14 +61,7 @@ class Example1 extends Phaser.Scene {
         exitDoor.obj.setScale(0.3).setImmovable(true)
 
         // Key
-        var keyX, keyY, keyOffset = 40
-        do{
-            keyX = Phaser.Math.Between(0 + keyOffset, background.displayWidth - keyOffset)
-            keyY = Phaser.Math.Between(0 + keyOffset, background.displayHeight - keyOffset)
-        } while(keyX > doorX - 20 && keyX < doorX + 20 && keyY > doorY - 20 && keyY < doorY + 20)
-        this.key = new Interactable(this, 'key')
-        this.key.create(this.player, ()=>{this.getKey()}, keyX, keyY)
-        this.key.obj.setScale(0.1)
+        this.setKey(background, doorX, doorY, 4000)
 
         this.hasKey = false
         this.keyText = this.add.text(0, 0, "Requires Key!", {font: '30px Arial', fill: '#FFFF44', align: 'center'})
@@ -127,6 +120,21 @@ class Example1 extends Phaser.Scene {
             this.keyText.visible = true
             this.keyTextTimer.setTimer(()=>{this.keyText.visible=false;this.keyTextTimer = null}, 2000)
         }
+    }
+
+    setKey(background, doorX, doorY, duration=0){
+        var keyX, keyY, keyOffset = 40
+        do{
+            keyX = Phaser.Math.Between(0 + keyOffset, background.displayWidth - keyOffset)
+            keyY = Phaser.Math.Between(0 + keyOffset, background.displayHeight - keyOffset)
+        } while(keyX > doorX - 20 && keyX < doorX + 20 && keyY > doorY - 20 && keyY < doorY + 20)
+
+        var timer = new Timer(this)
+        timer.setTimer(()=>{
+            this.key = new Interactable(this, 'key')
+            this.key.create(this.player, ()=>{this.getKey()}, keyX, keyY)
+            this.key.obj.setScale(0.1)
+        }, duration)
     }
 
     getKey(){
