@@ -29,6 +29,9 @@ class Example1 extends Phaser.Scene {
         this.cameras.main.setBounds(0, 0, this.xLimit, this.yLimit)
         this.cameras.main.zoomTo(2, timerDuration)
 
+        // Fade Effect
+        this.cameras.main.fade(timerDuration)
+
         // Shake Event
         this.events.on('shake', ()=>{this.cameras.main.shake(100, 0.0025)})
         
@@ -87,19 +90,18 @@ class Example1 extends Phaser.Scene {
         {
             this.gameOverText.setPosition(this.player.x - 115, this.player.y - 80)
             this.gameOverText.visible = true
-
+            
             this.time.paused = true
-            return
         }
 
         this.timer.update(delta)
         if (this.keyTextTimer)
             this.keyText.setPosition(this.player.x - 90, this.player.y - 80)
-
+        
         this.healthText.setText(this.health)
-
+        
         this.movement()
-       
+        
         this.cameras.main.centerOn(this.player.x, this.player.y)
     }
 
