@@ -27,6 +27,7 @@ class Example1 extends Phaser.Scene {
         
         // Cameras
         this.cameras.main.setBounds(0, 0, this.xLimit, this.yLimit)
+        this.cameras.main.zoomTo(2, timerDuration)
         
         // Controls
         this.cursors = this.input.keyboard.createCursorKeys()
@@ -107,16 +108,14 @@ class Example1 extends Phaser.Scene {
     }
 
     exitLevel(){
-        if (this.hasKey){
+        if (this.hasKey)
             this.scene.restart()
-        }
-        else {
-            if (this.keyTextTimer)
-                this.keyTextTimer.stop()
-            this.keyTextTimer = new Timer(this)
-            this.keyText.visible = true
-            this.keyTextTimer.setTimer(()=>{this.keyText.visible=false;this.keyTextTimer = null}, 2000)
-        }
+
+        if (this.keyTextTimer)
+            this.keyTextTimer.stop()
+        this.keyTextTimer = new Timer(this)
+        this.keyText.visible = true
+        this.keyTextTimer.setTimer(()=>{this.keyText.visible=false;this.keyTextTimer = null}, 2000)
     }
 
     getKey(){
