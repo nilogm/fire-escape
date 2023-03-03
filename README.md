@@ -12,6 +12,7 @@
   - [ ] Chave aparece após certo período de tempo
   - [ ] Maior frequência de obstáculos/menos tempo de aviso
 - [ ] Colisões melhores
+- [ ] Chave nunca cair em cima da porta e do jogador
 - [ ] Indicador de movimento (caso haja colisão, começar a perder vida por falta de movimento)
 - [ ] Extintor de incêndio (apagar obstáculos):
   - [ ] Gerado automaticamente ao entrar no mapa (no máximo 3)
