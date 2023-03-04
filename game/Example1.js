@@ -39,6 +39,7 @@ class Example1 extends Phaser.Scene {
         
         // Controls
         this.cursors = this.input.keyboard.createCursorKeys()
+        this.input.on('pointerdown', ()=>{gameOver = false;this.time.paused = false;this.scene.restart()})
         
         // Bombs
         bombs = this.physics.add.group()
@@ -88,7 +89,7 @@ class Example1 extends Phaser.Scene {
 
         this.timer.update(delta)
         if (this.keyTextTimer)
-            this.keyText.setPosition(this.player.x - 90, this.player.y - 80)
+            this.keyText.setPosition(this.player.x - this.keyText.width/2, this.player.y - this.keyText.height/2 - 70)
         
         this.healthText.setText(this.health)
         
