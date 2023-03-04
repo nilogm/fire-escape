@@ -10,6 +10,7 @@ class Example1 extends Phaser.Scene {
         this.load.image('bomb', 'assets/bomb.png')
         this.load.image('door', 'assets/door.png')
         this.load.image('key', 'assets/key.png')
+        this.load.image('shadow', 'assets/shadow.png')
         this.load.audio('chave_caindo', 'assets/sound/chave_caindo.wav')
         this.load.audio('porta_abrindo','assets/sound/porta_abrindo.wav')
     }
@@ -24,7 +25,7 @@ class Example1 extends Phaser.Scene {
 
         // Player
         this.player = this.physics.add.sprite(350, 350, 'circle')
-        this.player.setScale(0.05)
+        this.player.setScale(0.025)
         this.player.setCollideWorldBounds(true)
         
         // Cameras
@@ -39,11 +40,11 @@ class Example1 extends Phaser.Scene {
         
         // Controls
         this.cursors = this.input.keyboard.createCursorKeys()
-        this.input.on('pointerdown', ()=>{gameOver = false;this.time.paused = false;this.scene.restart()})
+        this.input.on('pointerdown', ()=>{this.resetGame()})
         
         // Bombs
         bombs = this.physics.add.group()
-        this.physics.add.collider(this.player, bombs, this.hitBomb, null, this)
+        this.physics.add.collider(this.player, bombs, null, null, this)
         
         // Game Over Text
         this.gameOverText = this.add.text(0, 0, "GAME OVER!", {font: '40px Arial', fill: '#FF0000', align: 'center'}).setScrollFactor(0)
@@ -61,10 +62,10 @@ class Example1 extends Phaser.Scene {
         var doorY = Phaser.Math.Between(0 + doorOffset, background.displayHeight - doorOffset);
         var exitDoor = new Interactable(this, 'door')
         exitDoor.create(this.player, ()=>{this.exitLevel()}, doorX, doorY)
-        exitDoor.obj.setScale(0.3).setImmovable(true)
+        exitDoor.obj.setScale(0.2).setImmovable(true)
 
         // Key
-        this.setKey(background, doorX, doorY, 4000,this.sound.add("chave_caindo"))
+        this.setKey(background, doorX, doorY, 4000)
 
         this.hasKey = false
         this.keyText = this.add.text(0, 0, "Requires Key!", {font: '30px Arial', fill: '#FFFF44', align: 'center'})
@@ -113,6 +114,12 @@ class Example1 extends Phaser.Scene {
         this.time.paused = true
     }
 
+    resetGame(){
+        gameOver = false
+        this.time.paused = false
+        this.scene.restart()
+    }
+
     exitLevel(){
         if (this.hasKey)
             this.scene.restart()
@@ -125,7 +132,7 @@ class Example1 extends Phaser.Scene {
         }
     }
 
-    setKey(background, doorX, doorY, duration=0,keysound){
+    setKey(background, doorX, doorY, duration=0){
         var keyX, keyY, keyOffset = 40
         do{
             keyX = Phaser.Math.Between(0 + keyOffset, background.displayWidth - keyOffset)
@@ -139,8 +146,8 @@ class Example1 extends Phaser.Scene {
                 this.getKey();
                 this.sound.add("porta_abrindo").play()
             }, keyX, keyY)
-            this.key.obj.setScale(0.1).refreshBody()
-            keysound.play()
+            this.key.obj.setScale(0.05).refreshBody()
+            this.sound.add("chave_caindo").play()
         }, duration)
     }
 

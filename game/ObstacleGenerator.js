@@ -29,7 +29,7 @@ class ObstacleGenerator{
     generate(){
         var x = Phaser.Math.Between(this.minX, this.maxX);
         var y = Phaser.Math.Between(this.minY, this.maxY);
-        var caution = this.scene.add.image(x, y,'caution').setScale(0.07);
+        var caution = this.scene.add.image(x, y,'shadow').setScale(0.07);
 
         var event = new Timer(this.scene)
         event.setTimer(()=>{
@@ -43,6 +43,11 @@ class ObstacleGenerator{
         var obstacle = bombs.create(x, y, 'bomb').setScale(2).setImmovable(true).refreshBody()
         obstacle.setTint(0xff0000)
         obstacle.setCollideWorldBounds(true)
+
+        this.scene.physics.add.overlap(this.scene.player, obstacle, ()=>{
+            this.scene.hitBomb()
+        });
+
         this.killTimer(obstacle)
     }
 
