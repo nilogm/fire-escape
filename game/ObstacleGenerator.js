@@ -40,7 +40,7 @@ class ObstacleGenerator{
     }
 
     createObstacle(x, y){
-        var obstacle = bombs.create(x, y, 'bomb').setScale(2).refreshBody()
+        var obstacle = bombs.create(x, y, 'bomb').setScale(2).setImmovable(true).refreshBody()
         obstacle.setTint(0xff0000)
         obstacle.setCollideWorldBounds(true)
         this.killTimer(obstacle)

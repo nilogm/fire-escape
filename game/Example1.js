@@ -98,10 +98,10 @@ class Example1 extends Phaser.Scene {
         this.cameras.main.centerOn(this.player.x, this.player.y)
     }
 
-    hitBomb(player, bomb)
+    hitBomb()
     {
         this.physics.pause()
-        player.setTint(0xff0000)
+        this.player.setTint(0xff0000)
         this.endGame()
         gameOver = true
     }
