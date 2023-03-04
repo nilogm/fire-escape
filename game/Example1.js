@@ -30,10 +30,16 @@ class Example1 extends Phaser.Scene {
         
         // Cameras
         this.cameras.main.setBounds(0, 0, this.xLimit, this.yLimit)
-        this.cameras.main.zoomTo(2, timerDuration)
+        
+        // Fade Effect + Zoom
+        this.cameras.main.zoomTo(1.2, cameraFXOffset)
 
-        // Fade Effect
-        this.cameras.main.fade(timerDuration)
+        var startFade = new Timer(this)
+        startFade.setTimer(()=>{
+            this.cameras.main.resetFX()
+            this.cameras.main.zoomTo(2, timerDuration - cameraFXOffset)
+            this.cameras.main.fade(timerDuration - cameraFXOffset)
+        }, cameraFXOffset)
         
         // Shake Event
         this.events.on('shake', ()=>{this.cameras.main.shake(100, 0.0025)})
@@ -143,17 +149,13 @@ class Example1 extends Phaser.Scene {
         timer.setTimer(()=>{
             this.key = new Interactable(this, 'key')
             this.key.create(this.player, ()=>{
-                this.getKey();
+                this.hasKey = true
+                this.key.obj.destroy()
                 this.sound.add("porta_abrindo").play()
             }, keyX, keyY)
             this.key.obj.setScale(0.05).refreshBody()
             this.sound.add("chave_caindo").play()
         }, duration)
-    }
-
-    getKey(){
-        this.hasKey = true
-        this.key.obj.destroy()
     }
 
     updateHealth(amount){
