@@ -17,13 +17,13 @@ class Example1 extends Phaser.Scene {
 
     create(){
         // Difficulty control
-        timerDuration -= (1000 * difficultyIncrease)
-        keyRange[0] += (1000 * difficultyIncrease)
+        timerDuration -= (1000 * difficultyIncrease * level)
+        keyRange[0] += (1000 * difficultyIncrease * level)
         if (keyRange[0] > keyRange[1] - 1000)
             keyRange[0] = keyRange[1] - 1000
         keyRange[1] = timerDuration * 0.8
-        bombFrequency -= (100 * difficultyIncrease)
-        maxHealth -= (100 * difficultyIncrease)
+        bombFrequency -= (100 * difficultyIncrease * level)
+        maxHealth -= (50 * difficultyIncrease * level)
 
         // Background Image
         var background = this.add.image(400,400,'ground')
@@ -72,21 +72,50 @@ class Example1 extends Phaser.Scene {
         new ObstacleGenerator(this).setGenerator([0, 0, 800, 600], bombFrequency)
 
         // Exit Door
-        var doorPosition = this.getPosition([0,0], [800,600], 40)
-        var exitDoor = new Interactable(this, 'door')
-        exitDoor.create(this.player, ()=>{this.exitLevel()})
-        exitDoor.obj.setPosition(doorPosition[0], doorPosition[1]).setScale(0.2).setImmovable(true)
+        var doorPosition, doorSize
+        var side = Phaser.Math.Between(0, 1)
+        switch (side) {
+            case 0:
+                doorPosition = this.getPosition([0,0], [800,0], 0)
+                doorSize = [50, 10]
+                break
+            case 1:
+                doorPosition = this.getPosition([0,0], [0,600], 0)
+                doorSize = [10, 50]
+                break
+            case 2:
+                doorPosition = this.getPosition([0,600], [800,600], 0)
+                doorSize = [50, 10]
+                break
+            case 3:
+                doorPosition = this.getPosition([800,0], [800,600], 0)
+                doorSize = [10, 50]
+                break
+        
+            default:
+                doorPosition = this.getPosition([0,0], [800,600], 40)
+                break;
+        }
+        // var exitDoor = new Interactable(this, 'door')
+        // exitDoor.create(this.player, ()=>{this.exitLevel()})
+        // exitDoor.obj.setPosition(doorPosition[0], doorPosition[1]).setScale(0.2).setImmovable(true)
+
+        var exitDoor = this.add.rectangle(doorPosition[0], doorPosition[1], doorSize[0], doorSize[1], 0x773311)
+        exitDoor.setStrokeStyle(4, 0x333333)
+        this.physics.add.existing(exitDoor)
+        this.physics.add.collider(this.player, exitDoor, ()=>{this.exitLevel()}, null, this)
+        exitDoor.body.setCollideWorldBounds(true).setImmovable(true)
 
         // Key
         this.setKey(doorPosition)
-        this.physics.add.overlap(exitDoor.obj, this.key.obj, ()=>{
+        this.physics.add.overlap(exitDoor, this.key.obj, ()=>{
             var keyPosition = this.getPosition([0,0], [800,600], 40)
             this.key.obj.setPosition(keyPosition[0], keyPosition[1])
         })
 
         this.hasKey = false
         this.keyText = this.add.text(0, 0, "Requires Key!", {font: '30px Arial', fill: '#FFFF44', align: 'center'})
-        this.keyText.setShadow(0, 5, '#000000', 4)
+        this.keyText.setShadow(0, 5, '#000000', 4).setScrollFactor(0)
         this.keyText.visible = false
 
         // Timer
@@ -100,6 +129,8 @@ class Example1 extends Phaser.Scene {
         // Stats
         this.health = maxHealth
         this.healthText = this.add.text(30, 120, this.health, {font: '30px Arial', fill: '#FFFFFF', align: 'center'}).setScrollFactor(0)
+
+        level = 1
     }
 
     update(delta){
@@ -107,9 +138,10 @@ class Example1 extends Phaser.Scene {
 
         this.timer.update(delta)
         if (this.keyTextTimer)
-            this.keyText.setPosition(this.player.x - this.keyText.width/2, this.player.y - this.keyText.height/2 - 70)
+            this.keyText.setPosition(400 - this.keyText.width/2, 40 - this.keyText.height/2)
         
         this.healthText.setText(this.health)
+        this.player.setTint(0xffaaaa * ((maxHealth - this.health)/maxHealth))
         
         this.movement()
         

@@ -18,7 +18,8 @@ var config = {
 
 var game = new Phaser.Game(config);
 
-var gameOver = false;
+var gameOver = false
+var level = 0
 
 var timerDuration = 20000
 var keyRange = [timerDuration * 0.1, timerDuration * 0.75]
@@ -32,4 +33,4 @@ var movementPenalty = 0.025
 
 var bombs;
 var bombFrequency = 500
-var bombOnContact = false;
+var bombOnContact = false
