@@ -16,6 +16,15 @@ class Example1 extends Phaser.Scene {
     }
 
     create(){
+        // Difficulty control
+        timerDuration -= (1000 * difficultyIncrease)
+        keyRange[0] += (1000 * difficultyIncrease)
+        if (keyRange[0] > keyRange[1] - 1000)
+            keyRange[0] = keyRange[1] - 1000
+        keyRange[1] = timerDuration * 0.8
+        bombFrequency -= (100 * difficultyIncrease)
+        maxHealth -= (100 * difficultyIncrease)
+
         // Background Image
         var background = this.add.image(400,400,'ground')
         background.x = background.displayWidth / 2
@@ -63,15 +72,17 @@ class Example1 extends Phaser.Scene {
         new ObstacleGenerator(this).setGenerator([0, 0, 800, 600], bombFrequency)
 
         // Exit Door
-        var doorOffset = 40
-        var doorX = Phaser.Math.Between(0 + doorOffset, background.displayWidth - doorOffset);
-        var doorY = Phaser.Math.Between(0 + doorOffset, background.displayHeight - doorOffset);
+        var doorPosition = this.getPosition([0,0], [800,600], 40)
         var exitDoor = new Interactable(this, 'door')
-        exitDoor.create(this.player, ()=>{this.exitLevel()}, doorX, doorY)
-        exitDoor.obj.setScale(0.2).setImmovable(true)
+        exitDoor.create(this.player, ()=>{this.exitLevel()})
+        exitDoor.obj.setPosition(doorPosition[0], doorPosition[1]).setScale(0.2).setImmovable(true)
 
         // Key
-        this.setKey(background, doorX, doorY, 4000)
+        this.setKey(doorPosition)
+        this.physics.add.overlap(exitDoor.obj, this.key.obj, ()=>{
+            var keyPosition = this.getPosition([0,0], [800,600], 40)
+            this.key.obj.setPosition(keyPosition[0], keyPosition[1])
+        })
 
         this.hasKey = false
         this.keyText = this.add.text(0, 0, "Requires Key!", {font: '30px Arial', fill: '#FFFF44', align: 'center'})
@@ -128,7 +139,7 @@ class Example1 extends Phaser.Scene {
 
     exitLevel(){
         if (this.hasKey)
-            this.scene.restart()
+            resetGame()
         else{   
             if (this.keyTextTimer)
                 this.keyTextTimer.stop()
@@ -138,24 +149,26 @@ class Example1 extends Phaser.Scene {
         }
     }
 
-    setKey(background, doorX, doorY, duration=0){
-        var keyX, keyY, keyOffset = 40
-        do{
-            keyX = Phaser.Math.Between(0 + keyOffset, background.displayWidth - keyOffset)
-            keyY = Phaser.Math.Between(0 + keyOffset, background.displayHeight - keyOffset)
-        } while(keyX > doorX - 20 && keyX < doorX + 20 && keyY > doorY - 20 && keyY < doorY + 20)
+    setKey(start=[0,0]){
+        // Creates key object
+        this.key = new Interactable(this, 'key')
+        this.key.obj.setPosition(start[0], start[1]).setScale(0.05).setVisible(false).refreshBody()
 
+        // Time until key is shown
         var timer = new Timer(this)
         timer.setTimer(()=>{
-            this.key = new Interactable(this, 'key')
             this.key.create(this.player, ()=>{
                 this.hasKey = true
                 this.key.obj.destroy()
                 this.sound.add("porta_abrindo").play()
-            }, keyX, keyY)
-            this.key.obj.setScale(0.05).refreshBody()
+            })
+            this.key.obj.setVisible(true)
             this.sound.add("chave_caindo").play()
-        }, duration)
+        }, Phaser.Math.Between(keyRange[0], keyRange[1]))
+    }
+
+    getPosition(min=[0, 0], max=[800, 600], offset=0){
+        return [Phaser.Math.Between(min[0] + offset, max[0] - offset), Phaser.Math.Between(min[1] + offset, max[1] - offset)]
     }
 
     updateHealth(amount){

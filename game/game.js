@@ -21,7 +21,10 @@ var game = new Phaser.Game(config);
 var gameOver = false;
 
 var timerDuration = 20000
+var keyRange = [timerDuration * 0.1, timerDuration * 0.75]
 var cameraFXOffset = timerDuration/2
+
+var difficultyIncrease = 0.05
 
 var velocity = 400
 var maxHealth = 100
