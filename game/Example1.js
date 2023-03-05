@@ -139,7 +139,7 @@ class Example1 extends Phaser.Scene {
 
     exitLevel(){
         if (this.hasKey)
-            resetGame()
+            this.resetGame()
         else{   
             if (this.keyTextTimer)
                 this.keyTextTimer.stop()
@@ -157,6 +157,18 @@ class Example1 extends Phaser.Scene {
         // Time until key is shown
         var timer = new Timer(this)
         timer.setTimer(()=>{
+            this.showKey()
+        }, Phaser.Math.Between(keyRange[0], keyRange[1]))
+    }
+
+    showKey(){
+        // Shadow before key falls
+        var caution = this.add.image(this.key.obj.x, this.key.obj.y,'shadow').setScale(0.07)
+        var event = new Timer(this)
+        event.setTimer(()=>{
+            caution.destroy()
+
+            // Show key
             this.key.create(this.player, ()=>{
                 this.hasKey = true
                 this.key.obj.destroy()
@@ -164,7 +176,8 @@ class Example1 extends Phaser.Scene {
             })
             this.key.obj.setVisible(true)
             this.sound.add("chave_caindo").play()
-        }, Phaser.Math.Between(keyRange[0], keyRange[1]))
+            
+        }, 1000)
     }
 
     getPosition(min=[0, 0], max=[800, 600], offset=0){
