@@ -18,6 +18,7 @@
 
 ## Mecânicas
 
+- [ ] Menu de início
 - [ ] Gerador de níveis aleatório:
   - [ ] Saída nas paredes (caso seja uma porta)
   - [x] Chave aparece após certo período de tempo

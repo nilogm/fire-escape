@@ -16,6 +16,8 @@ class Example1 extends Phaser.Scene {
     }
 
     create(){
+        this.time.paused=false
+
         // Difficulty control
         timerDuration -= (1000 * difficultyIncrease * level)
         keyRange[0] += (1000 * difficultyIncrease * level)
@@ -96,9 +98,6 @@ class Example1 extends Phaser.Scene {
                 doorPosition = this.getPosition([0,0], [800,600], 40)
                 break;
         }
-        // var exitDoor = new Interactable(this, 'door')
-        // exitDoor.create(this.player, ()=>{this.exitLevel()})
-        // exitDoor.obj.setPosition(doorPosition[0], doorPosition[1]).setScale(0.2).setImmovable(true)
 
         var exitDoor = this.add.rectangle(doorPosition[0], doorPosition[1], doorSize[0], doorSize[1], 0x773311)
         exitDoor.setStrokeStyle(4, 0x333333)
@@ -160,7 +159,9 @@ class Example1 extends Phaser.Scene {
         this.gameOverText.visible = true
         this.cameras.main.resetFX()
         this.cameras.main.fade(2000)
-        this.time.paused = true
+
+        var endGameTimer = new Timer(this)
+        endGameTimer.setTimer(()=>{this.scene.start("Menu")}, 2100)
     }
 
     resetGame(){
