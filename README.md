@@ -7,9 +7,11 @@
   - [ ] Player
   - [ ] Level
   - [ ] Porta/Placa de saída + chave
+
 - [ ] FX:
   - [ ] Fumaça nos cantos da tela
   - [ ] Iluminação do fogo
+
 - [ ] Sounds:
   - [x] Chave caindo
   - [ ] Obstáculo caindo
@@ -26,6 +28,12 @@
 - [x] Colisões melhores (consertei a parte de colidir na tela entendi o porque do bug)
 - [x] Chave nunca cair em cima da porta e do jogador
 - [ ] Indicador de movimento (caso haja colisão, começar a perder vida por falta de movimento) 
-- - [x] Botões Simultâneamente apertados que causam o jogador a ficar parado agora faz com q ele tome dano
+  - [x] Botões Simultâneamente apertados que causam o jogador a ficar parado agora faz com q ele tome dano
+- [ ] Hud tem q andar com a camera
+
+### Itens (Um por vez/ pode ser carregado para diferentes níveis)
+
+- [ ] Machado para abrir a porta sem chave
+- [ ] MedKit para não tomar hitkill
 - [ ] Extintor de incêndio (apagar obstáculos):
   - [ ] Gerado automaticamente ao entrar no mapa (no máximo 3)

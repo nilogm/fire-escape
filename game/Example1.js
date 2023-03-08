@@ -79,7 +79,7 @@ class Example1 extends Phaser.Scene {
 
         // Exit Door
         var doorPosition, doorSize
-        var side = Phaser.Math.Between(0, 1)
+        var side = Phaser.Math.Between(0, 3)
         switch (side) {
             case 0:
                 doorPosition = this.getPosition([0,0], [790,0], 0)
@@ -121,6 +121,9 @@ class Example1 extends Phaser.Scene {
         this.keyText.setShadow(0, 5, '#000000', 4).setScrollFactor(0)
         this.keyText.visible = false
 
+        // Random Object
+        this.createRandomObj(Phaser.Math.Between(0, 2),this.getPosition([0,0], [800,600], 40))
+
         // Timer
         var timeText = this.add.text(30, 30, "", {font: '30px Arial', fill: '#FFFFFF', align: 'center'}).setScrollFactor(0)
         var endLevelText = this.add.text(30, 80, "Timer ran out!", {font: '40px Arial', fill: '#FF0000', align: 'center'}).setScrollFactor(0)
@@ -152,12 +155,87 @@ class Example1 extends Phaser.Scene {
 
     }
 
+    createRandomObj(object_key, rdpos=[0,0]){
+        // 0- Machado/ 1-MedKit/ 2-Extintor
+        var timer = new Timer(this)
+        switch (object_key) {
+            case 0:
+                this.randomObj = new Interactable(this,'bomb')
+                this.itemText = this.add.text(30, 120, "Tem Machado", {font: '40px Arial', fill: '#FF0000', align: 'center'}).setVisible(false)
+                break;
+                
+            case 1:
+                this.randomObj = new Interactable(this,'bomb')
+                this.itemText = this.add.text(30, 120, "Tem MedKit", {font: '40px Arial', fill: '#FF0000', align: 'center'}).setVisible(false)
+                break;
+                    
+            case 2:
+                this.randomObj = new Interactable(this,'bomb')
+                this.itemText = this.add.text(30, 120, "Tem Extintor", {font: '40px Arial', fill: '#FF0000', align: 'center'}).setVisible(false)
+                break;
+                
+                default: break;
+        }
+                
+        this.randomObj.obj.setPosition(rdpos[0],rdpos[1]).setVisible(false).setScale(2).refreshBody()
+        var caution = this.add.image(this.randomObj.obj.x, this.randomObj.obj.y,'shadow').setScale(0.07)
+        timer.setTimer(()=>{
+            var event = new Timer(this)
+            event.setTimer(()=>{
+                caution.destroy()
+                //Adiciona objeto e seu callback ao bater
+                this.randomObj.create(this.player, ()=>{
+                    this.hasObj = true
+                    this.randomObj.obj.destroy()
+                    this.itemText.setVisible(true)
+                    switch (object_key) {
+                        case 0:
+                            this.temMachado()
+                            break;
+
+                        case 1:
+                            this.temMedKit()
+                            break;
+
+                        case 2:
+                            this.temExtintor()
+                            break;
+                    
+                        default: break;
+                    }
+                    //this.sound.add("").play()
+                })
+                
+                this.randomObj.obj.setVisible(true)
+                //this.sound.add("").play()
+                
+            }, 1000)
+        }, Phaser.Math.Between(objRange[0], objRange[1]) )
+    }
+
+    temExtintor(){
+        this.events.addListener('use extintor',()=>{
+            if(this.player.x ){
+                this.itemText.destroy()
+                this.events.removeListener('use extintor')
+            }
+        })
+    }
+
+    temMachado(){
+        
+    }
+
+    temMedKit(){
+        
+    }
+
     hitBomb()
     {
-        this.physics.pause()
-        this.player.setTint(0xff0000)
-        this.endGame()
-        gameOver = true
+        // this.physics.pause()
+        // this.player.setTint(0xff0000)
+        // this.endGame()
+        // gameOver = true
     }
 
     endGame(){

@@ -23,6 +23,7 @@ var level = 0
 
 var timerDuration = 20000
 var keyRange = [timerDuration * 0.1, timerDuration * 0.75]
+var objRange = [timerDuration*0.2, timerDuration*0.5]
 var cameraFXOffset = timerDuration/2
 
 var difficultyIncrease = 0.05
