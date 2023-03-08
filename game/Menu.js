@@ -8,15 +8,24 @@ class Menu extends Phaser.Scene{
     }
 
     create(){
-        this.startKey = this.input.keyboard.addKey("SPACE");
-        this.add.text(20, 20, "Press Space to Load Game ...");
+        this.startButton = this.add.text(400, 300, "START GAME")
+                            .setOrigin(0.5)
+                            .setPadding(10)
+                            .setStyle({ backgroundColor: '#112' })
+                            .setInteractive({hitArea:[20,20], useHandCursor: true })
+                            .on('pointerdown', () => this.startGame())
+                            .on('pointerover', () => button.setStyle({ fill: '#f39c12' }))
+                            .on('pointerout', () => button.setStyle({ fill: '#FFF' }));
+
+        this.infoButton = this.add.text(400, 450, "How to Play")
+                            .setOrigin(0.5)
+                            .setPadding(10)
+                            .setStyle({ backgroundColor: '#111' })
+                            .setInteractive({hitArea:[20,20], useHandCursor: true })
+                            .on('pointerdown', () => this.showInfo());
     }
 
-    update(delta){
-        if (this.startKey.isDown == true){
-            this.startGame()
-            this.scene.start("Example1")
-        }
+    update(){
     }
 
     startGame(){
@@ -36,5 +45,12 @@ class Menu extends Phaser.Scene{
         bombs;
         bombFrequency = 500
         bombOnContact = false
+        this.scene.start("Example1")
+        console.log("GAME START")
+    }
+
+    showInfo(){
+        //ADICIONAR
     }
 }
+

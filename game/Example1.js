@@ -29,10 +29,11 @@ class Example1 extends Phaser.Scene {
 
         // Background Image
         var background = this.add.image(400,400,'ground')
-        background.x = background.displayWidth / 2
-        background.y = background.displayHeight / 2
-        this.xLimit = background.displayWidth
-        this.yLimit = background.displayHeight
+        background.x = background.displayWidth/2
+        background.y = background.displayHeight/2
+            // esses são os limites corretos
+        this.xLimit = this.game.scale.width
+        this.yLimit = this.game.scale.height
 
         // Player
         this.player = this.physics.add.sprite(350, 350, 'circle')
@@ -40,7 +41,10 @@ class Example1 extends Phaser.Scene {
         this.player.setCollideWorldBounds(true)
         
         // Cameras
-        this.cameras.main.setBounds(0, 0, this.xLimit, this.yLimit)
+        this.cameras.main.setBounds(0, 0, this.xLimit, this.yLimit,true)
+        console.log(this.xLimit)
+        console.log(this.yLimit)
+        
         
         // Fade Effect + Zoom
         this.cameras.main.zoomTo(1.2, cameraFXOffset)
@@ -61,7 +65,7 @@ class Example1 extends Phaser.Scene {
         
         // Bombs
         bombs = this.physics.add.group()
-        this.physics.add.collider(this.player, bombs, null, null, this)
+        this.physics.add.collider(this.player, bombs, this.hitBomb, null, this)
         
         // Game Over Text
         this.gameOverText = this.add.text(0, 0, "GAME OVER!", {font: '40px Arial', fill: '#FF0000', align: 'center'}).setScrollFactor(0)
@@ -78,20 +82,20 @@ class Example1 extends Phaser.Scene {
         var side = Phaser.Math.Between(0, 1)
         switch (side) {
             case 0:
-                doorPosition = this.getPosition([0,0], [800,0], 0)
-                doorSize = [50, 10]
+                doorPosition = this.getPosition([0,0], [790,0], 0)
+                doorSize = [60, 20]
                 break
             case 1:
-                doorPosition = this.getPosition([0,0], [0,600], 0)
-                doorSize = [10, 50]
+                doorPosition = this.getPosition([0,0], [0,590], 0)
+                doorSize = [20, 60]
                 break
             case 2:
                 doorPosition = this.getPosition([0,600], [800,600], 0)
-                doorSize = [50, 10]
+                doorSize = [60, 20]
                 break
             case 3:
                 doorPosition = this.getPosition([800,0], [800,600], 0)
-                doorSize = [10, 50]
+                doorSize = [20, 60]
                 break
         
             default:
@@ -145,6 +149,7 @@ class Example1 extends Phaser.Scene {
         this.movement()
         
         this.cameras.main.centerOn(this.player.x, this.player.y)
+
     }
 
     hitBomb()
@@ -241,9 +246,17 @@ class Example1 extends Phaser.Scene {
         else
             this.player.setVelocityY(0)
 
-        if (this.cursors.up.isDown || this.cursors.right.isDown || this.cursors.left.isDown || this.cursors.down.isDown)
-            this.updateHealth(movementPenalty * maxHealth)
-        else
+        // CASO O PERSONAGEM NÃO ESTEJA ANDANDO POR CONTA DE BOTOES SIMULTANEAMENTE APERTADOS ELE TOMA DANO
+        if ((this.cursors.up.isDown && this.cursors.down.isDown && (!this.cursors.right.isDown && !this.cursors.left.isDown)) 
+             || (this.cursors.right.isDown && this.cursors.left.isDown && (!this.cursors.up.isDown && !this.cursors.down.isDown))
+             || (this.cursors.up.isDown && this.cursors.right.isDown && this.cursors.left.isDown && this.cursors.down.isDown))    {
             this.updateHealth(2 * -movementPenalty * maxHealth)
+        }
+        if (this.cursors.up.isDown || this.cursors.right.isDown || this.cursors.left.isDown || this.cursors.down.isDown){
+            this.updateHealth(movementPenalty * maxHealth)
+        }
+        else{
+            this.updateHealth(2 * -movementPenalty * maxHealth)
+        }
     }
 }
