@@ -46,6 +46,7 @@ class ObstacleGenerator{
 
         this.scene.physics.add.overlap(this.scene.player, obstacle, ()=>{
             this.scene.hitBomb()
+            obstacle.destroy()
         });
 
         this.killTimer(obstacle)

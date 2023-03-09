@@ -13,7 +13,7 @@ var config = {
         }
     },
  
-    scene: [Menu, Example1]
+    scene: [Menu, Scene1]
 };
 
 var game = new Phaser.Game(config);
@@ -35,3 +35,6 @@ var movementPenalty = 0.025
 var bombs;
 var bombFrequency = 500
 var bombOnContact = false
+
+var hasObj = false
+var item = -1

@@ -1,6 +1,7 @@
-class Example1 extends Phaser.Scene {
+
+class Scene1 extends Phaser.Scene {
     constructor(){
-        super({key:"Example1"})
+        super({key:"Scene1"})
     }
 
     preload(){
@@ -65,7 +66,7 @@ class Example1 extends Phaser.Scene {
         
         // Bombs
         bombs = this.physics.add.group()
-        this.physics.add.collider(this.player, bombs, this.hitBomb, null, this)
+        this.physics.add.collider(this.player, bombs, null, null, this)
         
         // Game Over Text
         this.gameOverText = this.add.text(0, 0, "GAME OVER!", {font: '40px Arial', fill: '#FF0000', align: 'center'}).setScrollFactor(0)
@@ -122,6 +123,13 @@ class Example1 extends Phaser.Scene {
         this.keyText.visible = false
 
         // Random Object
+        if(item != -1){}
+        this.emitter= EventDispatcher.getInstance();
+        this.emitter.on('use item',() =>{
+            this.itemText.destroy()
+            hasObj=false
+            item = -1
+        })
         this.createRandomObj(Phaser.Math.Between(0, 2),this.getPosition([0,0], [800,600], 40))
 
         // Timer
@@ -178,16 +186,18 @@ class Example1 extends Phaser.Scene {
         }
                 
         this.randomObj.obj.setPosition(rdpos[0],rdpos[1]).setVisible(false).setScale(2).refreshBody()
-        var caution = this.add.image(this.randomObj.obj.x, this.randomObj.obj.y,'shadow').setScale(0.07)
         timer.setTimer(()=>{
+            var caution = this.add.image(this.randomObj.obj.x, this.randomObj.obj.y,'shadow').setScale(0.07)
             var event = new Timer(this)
             event.setTimer(()=>{
                 caution.destroy()
                 //Adiciona objeto e seu callback ao bater
                 this.randomObj.create(this.player, ()=>{
-                    this.hasObj = true
+                    hasObj = true
                     this.randomObj.obj.destroy()
+                    item = object_key
                     this.itemText.setVisible(true)
+                    //funções adicionais (podem ser apagadas)
                     switch (object_key) {
                         case 0:
                             this.temMachado()
@@ -214,16 +224,11 @@ class Example1 extends Phaser.Scene {
     }
 
     temExtintor(){
-        this.events.addListener('use extintor',()=>{
-            if(this.player.x ){
-                this.itemText.destroy()
-                this.events.removeListener('use extintor')
-            }
-        })
+        
     }
 
     temMachado(){
-        
+    
     }
 
     temMedKit(){
@@ -232,10 +237,16 @@ class Example1 extends Phaser.Scene {
 
     hitBomb()
     {
-        // this.physics.pause()
-        // this.player.setTint(0xff0000)
-        // this.endGame()
-        // gameOver = true
+        if(hasObj && item == 1){
+            this.emitter.emit('use item')
+            return;
+        }
+        else {
+            this.physics.pause()
+            this.player.setTint(0xff0000)
+            this.endGame()
+            gameOver = true
+        }
     }
 
     endGame(){
@@ -254,15 +265,25 @@ class Example1 extends Phaser.Scene {
     }
 
     exitLevel(){
+        
         if (this.hasKey)
             this.resetGame()
-        else{   
-            if (this.keyTextTimer)
-                this.keyTextTimer.stop()
-            this.keyTextTimer = new Timer(this)
-            this.keyText.visible = true
-            this.keyTextTimer.setTimer(()=>{this.keyText.visible=false;this.keyTextTimer = null}, 2000)
+        else{
+            if (hasObj && item == 0){
+                if(this.cursors.space.isDown){
+                    this.emitter.emit('use item')
+                    this.resetGame()
+                }
+            }   
+            else{
+                if (this.keyTextTimer)
+                    this.keyTextTimer.stop()
+                this.keyTextTimer = new Timer(this)
+                this.keyText.visible = true
+                this.keyTextTimer.setTimer(()=>{this.keyText.visible=false;this.keyTextTimer = null}, 2000)
+            }
         }
+
     }
 
     setKey(start=[0,0]){

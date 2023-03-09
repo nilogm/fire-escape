@@ -45,7 +45,7 @@ class Menu extends Phaser.Scene{
         bombs;
         bombFrequency = 500
         bombOnContact = false
-        this.scene.start("Example1")
+        this.scene.start("Scene1")
         console.log("GAME START")
     }
 
