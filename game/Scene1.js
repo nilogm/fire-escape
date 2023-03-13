@@ -142,6 +142,15 @@ class Scene1 extends Phaser.Scene {
         this.health = maxHealth
         this.healthText = this.add.text(30, 120, this.health, {font: '30px Arial', fill: '#FFFFFF', align: 'center'}).setScrollFactor(0)
 
+        // Extinguisher orb
+        this.extinguisherAim = this.add.rectangle(0, 0, 50, 20, 0x222222)
+        this.extinguisherAim.setOrigin(0, 0.5)
+        this.extinguisherCloud = this.add.circle(100, 100, 30, 0xFDFDFD, 100)//.setVisible(false)
+        this.physics.add.existing(this.extinguisherCloud)
+        this.physics.add.collider(bombs, this.extinguisherCloud, this.cloudHit, null, this)
+
+        this.aimAngle = 0
+
         level = 1
     }
 
@@ -156,9 +165,13 @@ class Scene1 extends Phaser.Scene {
         this.player.setTint(0xffaaaa * ((maxHealth - this.health)/maxHealth))
         
         this.movement()
+
+        this.extinguisherAim.setAngle(this.aimAngle)
+        this.aimMovement()
         
         this.cameras.main.centerOn(this.player.x, this.player.y)
-
+        this.extinguisherAim.setPosition(this.player.x, this.player.y)
+        this.extinguisherCloud.setPosition(this.player.x + 50, this.player.y)
     }
 
     createItem(object_key, pos=[0,0]){
@@ -172,11 +185,13 @@ class Scene1 extends Phaser.Scene {
                     
         this.itemObject = new Interactable(this, item_info[0], this.player, ()=>{
             item = item_info[0]
+            this.itemText.setVisible(true)
         })
         this.itemObject.setObject(pos, 0.1)
         this.itemObject.setGenerator(itemRange)
         
-        this.itemText = this.add.text(120, 120, item_info[1], {font: '40px Arial', fill: '#FF0000', align: 'center'}).setVisible(false).setScrollFactor(0)
+        this.itemText = this.add.text(0, 0, item_info[1], {font: '40px Arial', fill: '#FF0000', align: 'center'}).setVisible(false).setScrollFactor(0)
+        this.itemText.setPosition(800 - 200 - this.itemText.width / 2, 600 - 100 - this.itemText.height / 2)
     }
 
     hitBomb()
@@ -189,6 +204,10 @@ class Scene1 extends Phaser.Scene {
             this.endGame()
             gameOver = true
         }
+    }
+
+    cloudHit(cloud, obstacle){
+        obstacle.destroy()
     }
 
     endGame(){
@@ -247,8 +266,72 @@ class Scene1 extends Phaser.Scene {
             this.health += amount
     }
 
+    updateAngle(amount, max){
+        if (this.aimAngle + amount > 360)
+            this.aimAngle -= 360
+
+        if (amount > 0){
+            if (this.aimAngle + amount >= max)
+                this.aimAngle = max
+            else
+                this.aimAngle += amount
+        }
+        else {
+            if (this.aimAngle + amount <= max)
+                this.aimAngle = max
+            else
+                this.aimAngle += amount
+        }
+    }   
+
+    aimMovement(){
+        if (this.cursors.left.isDown && this.aimAngle != 180){
+            if (this.aimAngle >= 180)
+                this.updateAngle(-aimVelocity, 180)
+            else
+                this.updateAngle(aimVelocity, 180)
+        }
+
+        if (this.cursors.right.isDown && this.aimAngle != 0){
+            if (this.aimAngle >= 180)
+                this.updateAngle(aimVelocity, 360)
+            else
+                this.updateAngle(-aimVelocity, 0)
+        }
+
+        if (this.cursors.up.isDown && this.aimAngle != 270){
+            if (this.aimAngle >= 90 && this.aimAngle <= 270)
+                this.updateAngle(aimVelocity, 270)
+            else {
+                if (this.aimAngle - aimVelocity < 0)
+                    this.aimAngle += 360
+
+                if (this.aimAngle - aimVelocity <= 270 && this.aimAngle > 270)
+                    this.aimAngle = 270
+                else
+                    this.aimAngle -= aimVelocity
+            }
+        }
+
+        if (this.cursors.down.isDown && this.aimAngle != 90){
+            if (this.aimAngle >= 90 && this.aimAngle <= 270)
+                this.updateAngle(-aimVelocity, 90)
+            else{
+
+                this.updateAngle(aimVelocity, 90)
+                if (this.aimAngle + aimVelocity > 360)
+                    this.aimAngle -= 360
+
+                if (this.aimAngle + aimVelocity >= 90 && this.aimAngle < 90)
+                    this.aimAngle = 90
+                else
+                    this.aimAngle += aimVelocity
+            }
+        }
+    }
+
     movement(){
-        if (this.cursors.left.isDown && this.player.x >= 0 && !this.cursors.right.isDown) 
+        if (this.cursors.left.isDown && this.player.x >= 0 && !this.cursors.right.isDown)
             this.player.setVelocityX(-velocity)
         else if (this.cursors.right.isDown && this.player.x <= this.xLimit && !this.cursors.left.isDown)
             this.player.setVelocityX(velocity)

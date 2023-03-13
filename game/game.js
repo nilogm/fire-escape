@@ -38,3 +38,5 @@ var bombOnContact = false
 
 // "none" / "medkit" / "fire" / "axe"
 var item = "none"
+
+var aimVelocity = 10
