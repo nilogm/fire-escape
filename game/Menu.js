@@ -14,8 +14,8 @@ class Menu extends Phaser.Scene{
                             .setStyle({ backgroundColor: '#112' })
                             .setInteractive({hitArea:[20,20], useHandCursor: true })
                             .on('pointerdown', () => this.startGame())
-                            .on('pointerover', () => button.setStyle({ fill: '#f39c12' }))
-                            .on('pointerout', () => button.setStyle({ fill: '#FFF' }));
+                            // .on('pointerover', () => button.setStyle({ fill: '#f39c12' }))
+                            // .on('pointerout', () => button.setStyle({ fill: '#FFF' }));
 
         this.infoButton = this.add.text(400, 450, "How to Play")
                             .setOrigin(0.5)

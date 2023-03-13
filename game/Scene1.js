@@ -12,6 +12,9 @@ class Scene1 extends Phaser.Scene {
         this.load.image('door', 'assets/door.png')
         this.load.image('key', 'assets/key.png')
         this.load.image('shadow', 'assets/shadow.png')
+        this.load.image('axe', 'assets/axe.png')
+        this.load.image('medkit', 'assets/medkit.png')
+        this.load.image('fire', 'assets/extinguisher.png')
         this.load.audio('chave_caindo', 'assets/sound/chave_caindo.wav')
         this.load.audio('porta_abrindo','assets/sound/porta_abrindo.wav')
     }
@@ -29,7 +32,7 @@ class Scene1 extends Phaser.Scene {
         maxHealth -= (50 * difficultyIncrease * level)
 
         // Background Image
-        var background = this.add.image(400,400,'ground')
+        var background = this.add.image(400, 400,'ground')
         background.x = background.displayWidth/2
         background.y = background.displayHeight/2
             // esses são os limites corretos
@@ -43,9 +46,6 @@ class Scene1 extends Phaser.Scene {
         
         // Cameras
         this.cameras.main.setBounds(0, 0, this.xLimit, this.yLimit,true)
-        console.log(this.xLimit)
-        console.log(this.yLimit)
-        
         
         // Fade Effect + Zoom
         this.cameras.main.zoomTo(1.2, cameraFXOffset)
@@ -123,14 +123,12 @@ class Scene1 extends Phaser.Scene {
         this.keyText.visible = false
 
         // Random Object
-        if(item != -1){}
-        this.emitter= EventDispatcher.getInstance();
+        this.emitter = EventDispatcher.getInstance();
         this.emitter.on('use item',() =>{
             this.itemText.destroy()
-            hasObj=false
-            item = -1
+            item = "none"
         })
-        this.createRandomObj(Phaser.Math.Between(0, 2),this.getPosition([0,0], [800,600], 40))
+        this.createItem(Phaser.Math.Between(0, 2), this.getPosition([0,0], [800,600], 40))
 
         // Timer
         var timeText = this.add.text(30, 30, "", {font: '30px Arial', fill: '#FFFFFF', align: 'center'}).setScrollFactor(0)
@@ -163,84 +161,28 @@ class Scene1 extends Phaser.Scene {
 
     }
 
-    createRandomObj(object_key, rdpos=[0,0]){
-        // 0- Machado/ 1-MedKit/ 2-Extintor
-        var timer = new Timer(this)
-        switch (object_key) {
-            case 0:
-                this.randomObj = new Interactable(this,'bomb')
-                this.itemText = this.add.text(30, 120, "Tem Machado", {font: '40px Arial', fill: '#FF0000', align: 'center'}).setVisible(false)
-                break;
-                
-            case 1:
-                this.randomObj = new Interactable(this,'bomb')
-                this.itemText = this.add.text(30, 120, "Tem MedKit", {font: '40px Arial', fill: '#FF0000', align: 'center'}).setVisible(false)
-                break;
+    createItem(object_key, pos=[0,0]){
+        var item_info = ["", ""]
+        if (object_key == 0)
+            item_info = ["axe", "Tem machado"]
+        else if (object_key == 1)
+            item_info = ["medkit", "Tem medkit"]
+        else if (object_key == 2)
+            item_info = ["fire", "Tem extintor"]
                     
-            case 2:
-                this.randomObj = new Interactable(this,'bomb')
-                this.itemText = this.add.text(30, 120, "Tem Extintor", {font: '40px Arial', fill: '#FF0000', align: 'center'}).setVisible(false)
-                break;
-                
-                default: break;
-        }
-                
-        this.randomObj.obj.setPosition(rdpos[0],rdpos[1]).setVisible(false).setScale(2).refreshBody()
-        timer.setTimer(()=>{
-            var caution = this.add.image(this.randomObj.obj.x, this.randomObj.obj.y,'shadow').setScale(0.07)
-            var event = new Timer(this)
-            event.setTimer(()=>{
-                caution.destroy()
-                //Adiciona objeto e seu callback ao bater
-                this.randomObj.create(this.player, ()=>{
-                    hasObj = true
-                    this.randomObj.obj.destroy()
-                    item = object_key
-                    this.itemText.setVisible(true)
-                    //funções adicionais (podem ser apagadas)
-                    switch (object_key) {
-                        case 0:
-                            this.temMachado()
-                            break;
-
-                        case 1:
-                            this.temMedKit()
-                            break;
-
-                        case 2:
-                            this.temExtintor()
-                            break;
-                    
-                        default: break;
-                    }
-                    //this.sound.add("").play()
-                })
-                
-                this.randomObj.obj.setVisible(true)
-                //this.sound.add("").play()
-                
-            }, 1000)
-        }, Phaser.Math.Between(objRange[0], objRange[1]) )
-    }
-
-    temExtintor(){
+        this.itemObject = new Interactable(this, item_info[0], this.player, ()=>{
+            item = item_info[0]
+        })
+        this.itemObject.setObject(pos, 0.1)
+        this.itemObject.setGenerator(itemRange)
         
-    }
-
-    temMachado(){
-    
-    }
-
-    temMedKit(){
-        
+        this.itemText = this.add.text(120, 120, item_info[1], {font: '40px Arial', fill: '#FF0000', align: 'center'}).setVisible(false).setScrollFactor(0)
     }
 
     hitBomb()
     {
-        if(hasObj && item == 1){
+        if(item == "medkit")
             this.emitter.emit('use item')
-            return;
-        }
         else {
             this.physics.pause()
             this.player.setTint(0xff0000)
@@ -265,56 +207,31 @@ class Scene1 extends Phaser.Scene {
     }
 
     exitLevel(){
-        
         if (this.hasKey)
             this.resetGame()
-        else{
-            if (hasObj && item == 0){
-                if(this.cursors.space.isDown){
-                    this.emitter.emit('use item')
-                    this.resetGame()
-                }
-            }   
-            else{
-                if (this.keyTextTimer)
-                    this.keyTextTimer.stop()
-                this.keyTextTimer = new Timer(this)
-                this.keyText.visible = true
-                this.keyTextTimer.setTimer(()=>{this.keyText.visible=false;this.keyTextTimer = null}, 2000)
+        else if (item == "axe"){
+            if (this.cursors.space.isDown){
+                this.emitter.emit('use item')
+                this.resetGame()
             }
+        }
+        else {
+            if (this.keyTextTimer)
+                this.keyTextTimer.stop()
+            this.keyTextTimer = new Timer(this)
+            this.keyText.visible = true
+            this.keyTextTimer.setTimer(()=>{this.keyText.visible=false;this.keyTextTimer = null}, 2000)
         }
 
     }
 
-    setKey(start=[0,0]){
+    setKey(pos=[0,0]){
         // Creates key object
-        this.key = new Interactable(this, 'key')
-        this.key.obj.setPosition(start[0], start[1]).setScale(0.05).setVisible(false).refreshBody()
-
-        // Time until key is shown
-        var timer = new Timer(this)
-        timer.setTimer(()=>{
-            this.showKey()
-        }, Phaser.Math.Between(keyRange[0], keyRange[1]))
-    }
-
-    showKey(){
-        // Shadow before key falls
-        var caution = this.add.image(this.key.obj.x, this.key.obj.y,'shadow').setScale(0.07)
-        var event = new Timer(this)
-        event.setTimer(()=>{
-            caution.destroy()
-
-            // Show key
-            this.key.create(this.player, ()=>{
-                this.hasKey = true
-                this.key.obj.destroy()
-                this.sound.add("porta_abrindo").play()
-            })
-            this.key.obj.setVisible(true)
-            this.sound.add("chave_caindo").play()
-            
-        }, 1000)
+        this.key = new Interactable(this, 'key', this.player, ()=>{
+            this.hasKey = true
+        }, "chave_caindo", "porta_abrindo")
+        this.key.setObject(pos, 0.05)
+        this.key.setGenerator(keyRange)
     }
 
     getPosition(min=[0, 0], max=[800, 600], offset=0){

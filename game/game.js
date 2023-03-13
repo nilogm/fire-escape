@@ -23,7 +23,7 @@ var level = 0
 
 var timerDuration = 20000
 var keyRange = [timerDuration * 0.1, timerDuration * 0.75]
-var objRange = [timerDuration*0.2, timerDuration*0.5]
+var itemRange = [timerDuration * 0.2, timerDuration * 0.5]
 var cameraFXOffset = timerDuration/2
 
 var difficultyIncrease = 0.05
@@ -36,5 +36,5 @@ var bombs;
 var bombFrequency = 500
 var bombOnContact = false
 
-var hasObj = false
-var item = -1
+// "none" / "medkit" / "fire" / "axe"
+var item = "none"
