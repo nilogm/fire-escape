@@ -143,13 +143,10 @@ class Scene1 extends Phaser.Scene {
         this.healthText = this.add.text(30, 120, this.health, {font: '30px Arial', fill: '#FFFFFF', align: 'center'}).setScrollFactor(0)
 
         // Extinguisher orb
-        this.extinguisherAim = this.add.rectangle(0, 0, 50, 20, 0x222222)
-        this.extinguisherAim.setOrigin(0, 0.5)
         this.extinguisherCloud = this.add.circle(100, 100, 30, 0xFDFDFD, 100)//.setVisible(false)
         this.physics.add.existing(this.extinguisherCloud)
         this.physics.add.collider(bombs, this.extinguisherCloud, this.cloudHit, null, this)
-
-        this.aimAngle = 0
+        this.playerCenter = new Phaser.Geom.Point(400, 300);
 
         level = 1
     }
@@ -165,13 +162,11 @@ class Scene1 extends Phaser.Scene {
         this.player.setTint(0xffaaaa * ((maxHealth - this.health)/maxHealth))
         
         this.movement()
+        this.playerCenter.setTo(this.player.x, this.player.y)
 
-        this.extinguisherAim.setAngle(this.aimAngle)
         this.aimMovement()
         
         this.cameras.main.centerOn(this.player.x, this.player.y)
-        this.extinguisherAim.setPosition(this.player.x, this.player.y)
-        this.extinguisherCloud.setPosition(this.player.x + 50, this.player.y)
     }
 
     createItem(object_key, pos=[0,0]){
@@ -285,47 +280,65 @@ class Scene1 extends Phaser.Scene {
     }   
 
     aimMovement(){
-        if (this.cursors.left.isDown && this.aimAngle != 180){
-            if (this.aimAngle >= 180)
-                this.updateAngle(-aimVelocity, 180)
-            else
-                this.updateAngle(aimVelocity, 180)
-        }
+        var angle = Phaser.Math.Angle.Between(this.extinguisherCloud.x, this.extinguisherCloud.y, this.player.x, this.player.y)
 
-        if (this.cursors.right.isDown && this.aimAngle != 0){
-            if (this.aimAngle >= 180)
-                this.updateAngle(aimVelocity, 360)
-            else
-                this.updateAngle(-aimVelocity, 0)
-        }
-
-        if (this.cursors.up.isDown && this.aimAngle != 270){
-            if (this.aimAngle >= 90 && this.aimAngle <= 270)
-                this.updateAngle(aimVelocity, 270)
+        if (this.cursors.left.isDown){
+            if (angle >= 0){
+                if (angle - aimVelocity < 0)
+                    Phaser.Actions.RotateAroundDistance([this.extinguisherCloud], this.playerCenter, -angle, aimRadius)
+                else 
+                    Phaser.Actions.RotateAroundDistance([this.extinguisherCloud], this.playerCenter, -aimVelocity, aimRadius)
+            }
             else {
-                if (this.aimAngle - aimVelocity < 0)
-                    this.aimAngle += 360
-
-                if (this.aimAngle - aimVelocity <= 270 && this.aimAngle > 270)
-                    this.aimAngle = 270
-                else
-                    this.aimAngle -= aimVelocity
+                if (angle + aimVelocity > 0)
+                    Phaser.Actions.RotateAroundDistance([this.extinguisherCloud], this.playerCenter, -angle, aimRadius)
+                else 
+                    Phaser.Actions.RotateAroundDistance([this.extinguisherCloud], this.playerCenter, aimVelocity, aimRadius)
             }
         }
 
-        if (this.cursors.down.isDown && this.aimAngle != 90){
-            if (this.aimAngle >= 90 && this.aimAngle <= 270)
-                this.updateAngle(-aimVelocity, 90)
-            else{
+        if (this.cursors.right.isDown){
+            if (angle >= 0){
+                if (angle + aimVelocity > Math.PI)
+                    Phaser.Actions.RotateAroundDistance([this.extinguisherCloud], this.playerCenter, Math.PI - angle, aimRadius)
+                else 
+                    Phaser.Actions.RotateAroundDistance([this.extinguisherCloud], this.playerCenter, aimVelocity, aimRadius)
+            }
+            else {
+                if (angle - aimVelocity < -Math.PI)
+                    Phaser.Actions.RotateAroundDistance([this.extinguisherCloud], this.playerCenter, - angle - Math.PI, aimRadius)
+                else 
+                    Phaser.Actions.RotateAroundDistance([this.extinguisherCloud], this.playerCenter, -aimVelocity, aimRadius)
+            }
+        }
 
-                this.updateAngle(aimVelocity, 90)
-                if (this.aimAngle + aimVelocity > 360)
-                    this.aimAngle -= 360
+        if (this.cursors.up.isDown){
+            if (angle >= Math.PI/2 || angle <= -Math.PI/2){
+                if (angle >= Math.PI/2 && angle - aimVelocity < Math.PI/2)
+                    Phaser.Actions.RotateAroundDistance([this.extinguisherCloud], this.playerCenter, Math.PI/2 - angle, aimRadius)
+                else 
+                    Phaser.Actions.RotateAroundDistance([this.extinguisherCloud], this.playerCenter, -aimVelocity, aimRadius)
+            }
+            else {
+                if (angle + aimVelocity > Math.PI/2)
+                    Phaser.Actions.RotateAroundDistance([this.extinguisherCloud], this.playerCenter, Math.PI/2 - angle, aimRadius)
+                else 
+                    Phaser.Actions.RotateAroundDistance([this.extinguisherCloud], this.playerCenter, aimVelocity, aimRadius)
+            }
+        }
 
-                if (this.aimAngle + aimVelocity >= 90 && this.aimAngle < 90)
-                    this.aimAngle = 90
-                else
-                    this.aimAngle += aimVelocity
+        if (this.cursors.down.isDown){
+            if (angle >= Math.PI/2 || angle <= -Math.PI/2){
+                if (angle <= -Math.PI/2 && angle + aimVelocity > -Math.PI/2)
+                    Phaser.Actions.RotateAroundDistance([this.extinguisherCloud], this.playerCenter, - Math.PI/2 - angle, aimRadius)
+                else 
+                    Phaser.Actions.RotateAroundDistance([this.extinguisherCloud], this.playerCenter, aimVelocity, aimRadius)
+            }
+            else {
+                if (angle - aimVelocity < -Math.PI/2)
+                    Phaser.Actions.RotateAroundDistance([this.extinguisherCloud], this.playerCenter, - Math.PI/2 - angle, aimRadius)
+                else 
+                    Phaser.Actions.RotateAroundDistance([this.extinguisherCloud], this.playerCenter, -aimVelocity, aimRadius)
             }
         }
     }
