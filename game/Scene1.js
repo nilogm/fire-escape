@@ -5,6 +5,7 @@ class Scene1 extends Phaser.Scene {
     }
 
     preload(){
+        // IMAGE AND SPRITES
         this.load.image('caution', 'assets/caution.png')
         this.load.image('ground', 'assets/ground2.png')
         this.load.image('circle', 'assets/circle.png')
@@ -15,8 +16,21 @@ class Scene1 extends Phaser.Scene {
         this.load.image('axe', 'assets/axe.png')
         this.load.image('medkit', 'assets/medkit.png')
         this.load.image('fire', 'assets/extinguisher.png')
+
+        //SOUND ASSETS
         this.load.audio('chave_caindo', 'assets/sound/chave_caindo.wav')
         this.load.audio('porta_abrindo','assets/sound/porta_abrindo.wav')
+        this.load.audio('footstep00', 'assets/sound/footstep00.ogg')
+        this.load.audio('footstep01', 'assets/sound/footstep01.ogg')
+        this.load.audio('footstep02', 'assets/sound/footstep02.ogg')
+        this.load.audio('footstep03', 'assets/sound/footstep03.ogg')
+        this.load.audio('footstep04', 'assets/sound/footstep04.ogg')
+        this.load.audio('footstep05', 'assets/sound/footstep05.ogg')
+        this.load.audio('footstep06', 'assets/sound/footstep06.ogg')
+        this.load.audio('footstep07', 'assets/sound/footstep07.ogg')
+        this.load.audio('footstep08', 'assets/sound/footstep08.ogg')
+        this.load.audio('footstep09', 'assets/sound/footstep09.ogg')
+        this.load.audio('obstacle', 'assets/sound/obstacle_dropping.wav')
     }
 
     create(){
@@ -147,6 +161,9 @@ class Scene1 extends Phaser.Scene {
         this.physics.add.existing(this.extinguisherCloud)
         this.physics.add.collider(bombs, this.extinguisherCloud, this.cloudHit, null, this)
         this.playerCenter = new Phaser.Geom.Point(400, 300);
+
+        // Movement Audio
+        this.audio_footstep = this.sound.add('footstep00')
 
         level = 1
     }
@@ -366,6 +383,14 @@ class Scene1 extends Phaser.Scene {
         }
         if (this.cursors.up.isDown || this.cursors.right.isDown || this.cursors.left.isDown || this.cursors.down.isDown){
             this.updateHealth(movementPenalty * maxHealth)
+            if(!this.audio_footstep.isPlaying){
+                var aud = Phaser.Math.Between(0,9)
+                var aud_name = 'footstep0' + aud
+                this.audio_footstep.destroy()
+                this.audio_footstep = this.sound.add(aud_name)
+                this.audio_footstep.setVolume(0.3)
+                this.audio_footstep.play()
+            }
         }
         else{
             this.updateHealth(2 * -movementPenalty * maxHealth)

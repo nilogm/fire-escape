@@ -36,6 +36,7 @@ class ObstacleGenerator{
             caution.destroy()
             this.createObstacle(x, y)
             this.scene.events.emit('shake')
+            this.scene.sound.add('obstacle').setVolume(0.5).play()
         }, 1000)
     }
 
