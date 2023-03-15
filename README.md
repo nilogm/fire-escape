@@ -16,7 +16,7 @@
 
 - [ ] Sounds:
   - [x] Chave caindo
-  - [ ] Obstáculo caindo
+  - [x] Obstáculo caindo
   - [x] Porta abrindo
   - [ ] Fogo + fogging
 
