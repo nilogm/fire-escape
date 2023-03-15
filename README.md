@@ -23,7 +23,7 @@
 ## Mecânicas
 
 - [ ] Menu de início
-- [ ] Gerador de níveis aleatório:
+- [x] Gerador de níveis aleatório:
   - [x] Saída nas paredes (caso seja uma porta)
   - [x] Chave aparece após certo período de tempo
   - [x] Maior frequência de obstáculos/menos tempo de aviso
@@ -37,5 +37,4 @@
 
 - [x] Machado para abrir a porta sem chave
 - [x] MedKit para não tomar hitkill
-- [ ] Extintor de incêndio (apagar obstáculos):
-  - [ ] Gerado automaticamente ao entrar no mapa (no máximo 3)
+- [x] Extintor de incêndio (apagar obstáculos)
