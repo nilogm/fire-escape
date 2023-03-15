@@ -138,7 +138,7 @@ class Scene1 extends Phaser.Scene {
 
         // Random Object
         this.emitter = EventDispatcher.getInstance();
-        this.emitter.on('use item',() =>{
+        this.emitter.on('use item', () =>{
             this.itemText.destroy()
             item = "none"
         })
@@ -157,9 +157,7 @@ class Scene1 extends Phaser.Scene {
         this.healthText = this.add.text(30, 120, this.health, {font: '30px Arial', fill: '#FFFFFF', align: 'center'}).setScrollFactor(0)
 
         // Extinguisher orb
-        this.extinguisherCloud = this.add.circle(100, 100, 30, 0xFDFDFD, 100)//.setVisible(false)
-        this.physics.add.existing(this.extinguisherCloud)
-        this.physics.add.collider(bombs, this.extinguisherCloud, this.cloudHit, null, this)
+        this.extinguisherCloud = null
         this.playerCenter = new Phaser.Geom.Point(400, 300);
 
         // Movement Audio
@@ -181,7 +179,13 @@ class Scene1 extends Phaser.Scene {
         this.movement()
         this.playerCenter.setTo(this.player.x, this.player.y)
 
-        this.aimMovement()
+        if (item == "fire" && this.cursors.space.isDown){
+            this.emitter.emit('use item')
+            this.useExtinguisher()
+        }
+        
+        if (this.extinguisherCloud != null)
+            this.aimMovement()
         
         this.cameras.main.centerOn(this.player.x, this.player.y)
     }
@@ -204,6 +208,9 @@ class Scene1 extends Phaser.Scene {
         
         this.itemText = this.add.text(0, 0, item_info[1], {font: '40px Arial', fill: '#FF0000', align: 'center'}).setVisible(false).setScrollFactor(0)
         this.itemText.setPosition(800 - 200 - this.itemText.width / 2, 600 - 100 - this.itemText.height / 2)
+        
+        if (item != "none")
+            this.itemText.setVisible(true)
     }
 
     hitBomb()
@@ -235,6 +242,17 @@ class Scene1 extends Phaser.Scene {
         gameOver = false
         this.time.paused = false
         this.scene.restart()
+    }
+
+    useExtinguisher(){
+        this.extinguisherCloud = this.add.circle(this.player.x, this.player.y, 30, 0xFDFDFD, 100).setVisible(true)
+        this.physics.add.existing(this.extinguisherCloud)
+        this.physics.add.collider(bombs, this.extinguisherCloud, this.cloudHit, null, this)
+
+        var timer = new Timer(this)
+        timer.setTimer(()=>{
+            this.extinguisherCloud.destroy()
+        }, 5000)
     }
 
     exitLevel(){
