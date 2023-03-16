@@ -14,6 +14,14 @@ class Scene1 extends Phaser.Scene {
         this.load.image('key', 'assets/key.png')
         this.load.image('shadow', 'assets/shadow.png')
 
+        this.load.image('fire', 'assets/Extintor.png')
+        this.load.image('axe', 'assets/Machado.png')
+        this.load.image('medkit', 'assets/MedKit.png')
+        this.load.image('obstacle1', 'assets/Obstaculo 1.png')
+        this.load.image('obstacle2', 'assets/Obstaculo 2.png')
+        this.load.image('obstacle3', 'assets/Obstaculo 3.png')
+        this.load.image('obstacle4', 'assets/Obstaculo 4.png')
+
         //SOUND ASSETS
         this.load.audio('chave_caindo', 'assets/sound/chave_caindo.wav')
         this.load.audio('porta_abrindo','assets/sound/porta_abrindo.wav')
@@ -42,18 +50,19 @@ class Scene1 extends Phaser.Scene {
         timerDuration -= (1000 * difficultyIncrease * level)
         keyRange[0] += (1000 * difficultyIncrease * level)
         if (keyRange[0] > keyRange[1] - 1000)
-            keyRange[0] = keyRange[1] - 1000
+        keyRange[0] = keyRange[1] - 1000
         keyRange[1] = timerDuration * 0.8
         bombFrequency -= (100 * difficultyIncrease * level)
         maxHealth -= (50 * difficultyIncrease * level)
-
+        
         // Background Image
         var background = this.add.image(400, 400,'ground')
         background.x = background.displayWidth/2
         background.y = background.displayHeight/2
         this.xLimit = this.game.scale.width
         this.yLimit = this.game.scale.height
-
+        
+        // Pre-fog
         var width = this.game.scale.width
         var height = this.game.scale.width
         const rt = this.make.renderTexture({
@@ -61,83 +70,36 @@ class Scene1 extends Phaser.Scene {
             height
         }, true)
         rt.draw('ground')
-        rt.setTint(0x111111)
+        rt.setTint(0x111111).setDepth(2)
 
+        // Stats
+        hasKey = false
+        this.health = maxHealth
+        
         // Player
         this.player = this.physics.add.sprite(350, 350, 'circle').setScale(0.025).setCollideWorldBounds(true)
+        this.playerCenter = new Phaser.Geom.Point()
         
         // Cameras
         this.cameras.main.setBounds(0, 0, this.xLimit, this.yLimit,true)
         
-        // Fade Effect + Zoom
-        // this.cameras.main.zoomTo(1.2, cameraFXOffset)
-
-        // var startFade = new Timer(this)
-        // startFade.setTimer(()=>{
-        //     this.cameras.main.resetFX()
-        //     this.cameras.main.zoomTo(2, timerDuration - cameraFXOffset)
-        //     this.cameras.main.fade(timerDuration - cameraFXOffset)
-        // }, cameraFXOffset)
-        
-        // Shake Event
-        this.events.on('shake', ()=>{this.cameras.main.shake(100, 0.0025)})
-        
         // Controls
         this.cursors = this.input.keyboard.createCursorKeys()
-        this.input.on('pointerdown', ()=>{this.resetGame()})
         
         // Bombs
         bombs = this.physics.add.group()
         this.physics.add.collider(this.player, bombs, null, null, this)
-        
-        // Game Over Text
-        this.gameOverText = this.add.text(0, 0, "GAME OVER!", {font: '40px Arial', fill: '#FF0000', align: 'center'}).setScrollFactor(0).setVisible(false).setDepth(1)
-        this.gameOverText.setPosition(400 - this.gameOverText.getCenter().x, 300 - this.gameOverText.getCenter().y)
-        this.gameOverText.setShadow(0, 5, '#000000', 4)
-
-        // Bomb Generator
         new ObstacleGenerator(this).setGenerator([0, 0, 800, 600], bombFrequency)
 
         // Exit Door
-        var doorPosition, doorSize
-        var side = Phaser.Math.Between(0, 3)
-        switch (side) {
-            case 0:
-                doorPosition = this.getPosition([0,0], [790,0], 0)
-                doorSize = [60, 20]
-                break
-            case 1:
-                doorPosition = this.getPosition([0,0], [0,590], 0)
-                doorSize = [20, 60]
-                break
-            case 2:
-                doorPosition = this.getPosition([0,600], [800,600], 0)
-                doorSize = [60, 20]
-                break
-            case 3:
-                doorPosition = this.getPosition([800,0], [800,600], 0)
-                doorSize = [20, 60]
-                break
-        
-            default:
-                doorPosition = this.getPosition([0,0], [800,600], 40)
-                break;
-        }
-
-        var exitDoor = this.add.rectangle(doorPosition[0], doorPosition[1], doorSize[0], doorSize[1], 0x773311).setStrokeStyle(4, 0x333333)
-        this.physics.add.existing(exitDoor)
-        this.physics.add.collider(this.player, exitDoor, ()=>{this.exitLevel()}, null, this)
-        exitDoor.body.setCollideWorldBounds(true).setImmovable(true)
+        var doorPosition = this.createDoor()
 
         // Key
         this.setKey(doorPosition)
-        this.physics.add.overlap(exitDoor, this.key.obj, ()=>{
+        this.physics.add.overlap(this.exitDoor, this.key.obj, ()=>{
             var keyPosition = this.getPosition([0,0], [800,600], 40)
             this.key.obj.setPosition(keyPosition[0], keyPosition[1])
         })
-
-        this.hasKey = false
-        this.keyText = this.add.text(0, 0, "Requires Key!", {font: '30px Arial', fill: '#FFFF44', align: 'center'}).setShadow(0, 5, '#000000', 4).setScrollFactor(0).setVisible(false)
 
         // Random Object
         this.emitter = EventDispatcher.getInstance();
@@ -145,21 +107,11 @@ class Scene1 extends Phaser.Scene {
         this.createItem(Phaser.Math.Between(0, 2), this.getPosition([0,0], [800,600], 40))
 
         // Timer
-        var timeText = this.add.text(30, 30, "", {font: '30px Arial', fill: '#FFFFFF', align: 'center'}).setScrollFactor(0)
-        this.timer = new Timer(this, timeText)
-        this.timer.setTimer(null, timerDuration)
+        this.timer = new Timer(this)
+        this.timer.setTimer(()=>{this.endGame()}, timerDuration)
 
-        // Stats
-        this.health = maxHealth
-        this.healthText = this.add.text(30, 120, this.health, {font: '30px Arial', fill: '#FFFFFF', align: 'center'}).setScrollFactor(0)
-
-        // Extinguisher orb
-        this.playerCenter = new Phaser.Geom.Point(400, 300)
-
-        // Movement Audio
-        this.audio_footstep = this.sound.add('footstep00')
-
-        // Animations
+        // Animations -------------
+        // Extinguisher Cloud
         this.anims.create({
             key: "cloud_anim",
             frames: this.anims.generateFrameNumbers("cloud"),
@@ -167,21 +119,40 @@ class Scene1 extends Phaser.Scene {
             repeat: -1
         })
 
-        // Oxygen meter
-        this.oxygenMeter = this.add.sprite(100, 100, 'oxygen').setScrollFactor(0).setScale(3)
-        this.oxygenPointer = this.add.sprite(this.oxygenMeter.x - 2, this.oxygenMeter.y, 'oxygen').setScrollFactor(0).setScale(3)
+        // SFX --------------------
+        // Movement Audio
+        this.audio_footstep = this.sound.add('footstep00')
+
+        // UI ---------------------
+        // Oxygen Meter
+        this.oxygenMeter = this.add.sprite(width/2, 500, 'oxygen').setScrollFactor(0).setScale(3).setDepth(3)
+        this.oxygenPointer = this.add.sprite(this.oxygenMeter.x - 2, this.oxygenMeter.y, 'oxygen').setScrollFactor(0).setScale(3).setDepth(3)
         this.oxygenPointer.setFrame(1).setOrigin(0.48, 0.575).setAngle(-115)
 
-        // Fog
+        // FX ---------------------
+        // Fog 
         this.vision = this.make.image({
             x: this.player.x + 4,
             y: this.player.y + 2,
             key: 'fog',
             add: false
         })
-        this.vision.scale = 0.5
+        this.vision.scale = 1
         rt.mask = new Phaser.Display.Masks.BitmapMask(this, this.vision)
         rt.mask.invertAlpha = true
+
+        // Fade Effect + Zoom
+        this.cameras.main.zoomTo(1.2, cameraFXOffset)
+
+        var startFade = new Timer(this)
+        startFade.setTimer(()=>{
+            this.cameras.main.resetFX()
+            this.cameras.main.zoomTo(2, timerDuration - cameraFXOffset)
+            this.cameras.main.fade(timerDuration - cameraFXOffset)
+        }, cameraFXOffset)
+        
+        // Shake Event
+        this.events.on('shake', ()=>{this.cameras.main.shake(100, 0.0025)})
 
         level = 1
     }
@@ -195,14 +166,10 @@ class Scene1 extends Phaser.Scene {
 
         if (this.vision)
         {
-            this.vision.x = this.player.x
-            this.vision.y = this.player.y
+            this.vision.x = this.player.x + 4
+            this.vision.y = this.player.y + 2
         }
-
-        if (this.keyTextTimer)
-            this.keyText.setPosition(400 - this.keyText.width/2, 40 - this.keyText.height/2)
         
-        this.healthText.setText(this.health)
         this.player.setTint(0xffaaaa * ((maxHealth - this.health)/maxHealth))
         
         this.movement()
@@ -236,11 +203,11 @@ class Scene1 extends Phaser.Scene {
         else if (object_key == 2)
             item_name = "axe"
                     
-        this.itemObject = new Interactable(this, "items", this.player, ()=>{
+        this.itemObject = new Interactable(this, item_name, this.player, ()=>{
             item = item_name
         })
-        this.itemObject.obj.setFrame(object_key)
-        this.itemObject.setObject(pos, 2)
+        // this.itemObject.obj.setFrame(object_key)
+        this.itemObject.setObject(pos, 1)
         this.itemObject.setGenerator(itemRange)
     }
 
@@ -262,7 +229,10 @@ class Scene1 extends Phaser.Scene {
     }
 
     endGame(){
-        this.gameOverText.visible = true
+        this.gameOverText = this.add.text(0, 0, "GAME OVER!", {font: '40px Arial', fill: '#FF0000', align: 'center'}).setScrollFactor(0).setDepth(3)
+        this.gameOverText.setPosition(400 - this.gameOverText.getCenter().x, 300 - this.gameOverText.getCenter().y)
+        this.gameOverText.setShadow(0, 5, '#000000', 4)
+
         this.cameras.main.resetFX()
         this.cameras.main.fade(2000)
 
@@ -323,6 +293,40 @@ class Scene1 extends Phaser.Scene {
             this.keyTextTimer.setTimer(()=>{this.keyText.visible=false;this.keyTextTimer = null}, 2000)
         }
 
+    }
+
+    createDoor(){
+        var doorPosition, doorSize
+        var side = Phaser.Math.Between(0, 3)
+        switch (side) {
+            case 0:
+                doorPosition = this.getPosition([0,0], [790,0], 0)
+                doorSize = [60, 20]
+                break
+            case 1:
+                doorPosition = this.getPosition([0,0], [0,590], 0)
+                doorSize = [20, 60]
+                break
+            case 2:
+                doorPosition = this.getPosition([0,600], [800,600], 0)
+                doorSize = [60, 20]
+                break
+            case 3:
+                doorPosition = this.getPosition([800,0], [800,600], 0)
+                doorSize = [20, 60]
+                break
+        
+            default:
+                doorPosition = this.getPosition([0,0], [800,600], 40)
+                break;
+        }
+
+        this.exitDoor = this.add.rectangle(doorPosition[0], doorPosition[1], doorSize[0], doorSize[1], 0x773311).setStrokeStyle(4, 0x333333)
+        this.physics.add.existing(this.exitDoor)
+        this.physics.add.collider(this.player, this.exitDoor, ()=>{this.exitLevel()}, null, this)
+        this.exitDoor.body.setCollideWorldBounds(true).setImmovable(true)
+
+        return doorPosition
     }
 
     setKey(pos=[0,0]){

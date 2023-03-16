@@ -22,6 +22,8 @@ var game = new Phaser.Game(config);
 var gameOver = false
 var level = 0
 
+var hasKey = false
+
 var timerDuration = 20000
 var keyRange = [timerDuration * 0.1, timerDuration * 0.75]
 var itemRange = [timerDuration * 0.2, timerDuration * 0.5]
