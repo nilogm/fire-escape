@@ -9,7 +9,7 @@ class Scene1 extends Phaser.Scene {
         this.load.image('caution', 'assets/caution.png')
         this.load.image('ground', 'assets/ground2.png')
         this.load.image('circle', 'assets/circle.png')
-        this.load.image('bomb', 'assets/bomb.png')
+        //this.load.image('bomb', 'assets/bomb.png')
         this.load.image('door', 'assets/door.png')
         this.load.image('key', 'assets/key.png')
         this.load.image('shadow', 'assets/shadow.png')
@@ -17,14 +17,22 @@ class Scene1 extends Phaser.Scene {
         this.load.image('fire', 'assets/Extintor.png')
         this.load.image('axe', 'assets/Machado.png')
         this.load.image('medkit', 'assets/MedKit.png')
-        this.load.image('obstacle1', 'assets/Obstaculo 1.png')
-        this.load.image('obstacle2', 'assets/Obstaculo 2.png')
-        this.load.image('obstacle3', 'assets/Obstaculo 3.png')
-        this.load.image('obstacle4', 'assets/Obstaculo 4.png')
+        this.load.image('obstacle1', 'assets/Obstaculo1.png')
+        this.load.image('obstacle2', 'assets/Obstaculo2.png')
+        this.load.image('obstacle3', 'assets/Obstaculo3.png')
+        this.load.image('obstacle4', 'assets/Obstaculo4.png')
+
+        this.load.spritesheet('cloud', 'assets/cloud.png', {frameWidth: 32, frameHeight: 32})
+        this.load.spritesheet('items', 'assets/items.png', {frameWidth: 32, frameHeight: 32})
+        this.load.spritesheet('oxygen', 'assets/oxygen.png', {frameWidth: 32, frameHeight: 32})
+        this.load.image('fog', 'assets/fog.png')
+
 
         //SOUND ASSETS
         this.load.audio('chave_caindo', 'assets/sound/chave_caindo.wav')
         this.load.audio('porta_abrindo','assets/sound/porta_abrindo.wav')
+        this.load.audio('obstacle', 'assets/sound/obstacle_dropping.wav')
+        //  Passos
         this.load.audio('footstep00', 'assets/sound/footstep00.ogg')
         this.load.audio('footstep01', 'assets/sound/footstep01.ogg')
         this.load.audio('footstep02', 'assets/sound/footstep02.ogg')
@@ -35,12 +43,11 @@ class Scene1 extends Phaser.Scene {
         this.load.audio('footstep07', 'assets/sound/footstep07.ogg')
         this.load.audio('footstep08', 'assets/sound/footstep08.ogg')
         this.load.audio('footstep09', 'assets/sound/footstep09.ogg')
-        this.load.audio('obstacle', 'assets/sound/obstacle_dropping.wav')
-
-        this.load.spritesheet('cloud', 'assets/cloud.png', {frameWidth: 32, frameHeight: 32})
-        this.load.spritesheet('items', 'assets/items.png', {frameWidth: 32, frameHeight: 32})
-        this.load.spritesheet('oxygen', 'assets/oxygen.png', {frameWidth: 32, frameHeight: 32})
-        this.load.image('fog', 'assets/fog.png')
+        // Porta
+        this.load.audio('forcingdoor0', 'assets/sound/forcingdoor0.ogg')
+        this.load.audio('forcingdoor1', 'assets/sound/forcingdoor1.ogg')
+        this.load.audio('forcingdoor2', 'assets/sound/forcingdoor2.ogg')
+        this.load.audio('forcingdoor3', 'assets/sound/forcingdoor3.ogg')
     }
 
     create(){
@@ -89,7 +96,7 @@ class Scene1 extends Phaser.Scene {
         // Bombs
         bombs = this.physics.add.group()
         this.physics.add.collider(this.player, bombs, null, null, this)
-        new ObstacleGenerator(this).setGenerator([0, 0, 800, 600], bombFrequency)
+        new ObstacleGenerator(this).setGenerator([0, 0, 800, 600], bombFrequency,['obstacle1','obstacle2','obstacle3','obstacle4'])
 
         // Exit Door
         var doorPosition = this.createDoor()
@@ -103,7 +110,7 @@ class Scene1 extends Phaser.Scene {
 
         // Random Object
         this.emitter = EventDispatcher.getInstance();
-        this.emitter.on('use item', () =>{item = "none"})
+        this.emitter.on('use item', () =>{item = 'none'})
         this.createItem(Phaser.Math.Between(0, 2), this.getPosition([0,0], [800,600], 40))
 
         // Timer
@@ -122,6 +129,8 @@ class Scene1 extends Phaser.Scene {
         // SFX --------------------
         // Movement Audio
         this.audio_footstep = this.sound.add('footstep00')
+        // Trying to open door
+        this.audio_trying_open_door = this.sound.add('forcingdoor0')
 
         // UI ---------------------
         // Oxygen Meter
@@ -286,11 +295,14 @@ class Scene1 extends Phaser.Scene {
             }
         }
         else {
-            if (this.keyTextTimer)
-                this.keyTextTimer.stop()
-            this.keyTextTimer = new Timer(this)
-            this.keyText.visible = true
-            this.keyTextTimer.setTimer(()=>{this.keyText.visible=false;this.keyTextTimer = null}, 2000)
+            if(!this.audio_trying_open_door.isPlaying){
+                var aud = Phaser.Math.Between(0,3)
+                var aud_name = 'forcingdoor' + aud
+                this.audio_trying_open_door.destroy()
+                this.audio_trying_open_door = this.sound.add(aud_name)
+                this.audio_trying_open_door.setVolume(2)
+                this.audio_trying_open_door.play()
+            }
         }
 
     }
