@@ -31,6 +31,7 @@ class Scene1 extends Phaser.Scene {
 
         this.load.spritesheet('cloud', 'assets/cloud.png', {frameWidth: 32, frameHeight: 32})
         this.load.spritesheet('items', 'assets/items.png', {frameWidth: 32, frameHeight: 32})
+        this.load.spritesheet('oxygen', 'assets/oxygen.png', {frameWidth: 32, frameHeight: 32})
     }
 
     create(){
@@ -59,14 +60,14 @@ class Scene1 extends Phaser.Scene {
         this.cameras.main.setBounds(0, 0, this.xLimit, this.yLimit,true)
         
         // Fade Effect + Zoom
-        this.cameras.main.zoomTo(1.2, cameraFXOffset)
+        // this.cameras.main.zoomTo(1.2, cameraFXOffset)
 
-        var startFade = new Timer(this)
-        startFade.setTimer(()=>{
-            this.cameras.main.resetFX()
-            this.cameras.main.zoomTo(2, timerDuration - cameraFXOffset)
-            this.cameras.main.fade(timerDuration - cameraFXOffset)
-        }, cameraFXOffset)
+        // var startFade = new Timer(this)
+        // startFade.setTimer(()=>{
+        //     this.cameras.main.resetFX()
+        //     this.cameras.main.zoomTo(2, timerDuration - cameraFXOffset)
+        //     this.cameras.main.fade(timerDuration - cameraFXOffset)
+        // }, cameraFXOffset)
         
         // Shake Event
         this.events.on('shake', ()=>{this.cameras.main.shake(100, 0.0025)})
@@ -156,14 +157,21 @@ class Scene1 extends Phaser.Scene {
             repeat: -1
         })
 
+        // Oxygen meter
+        this.oxygenMeter = this.add.sprite(100, 100, 'oxygen').setScrollFactor(0).setScale(3)
+        this.oxygenPointer = this.add.sprite(this.oxygenMeter.x - 2, this.oxygenMeter.y, 'oxygen').setScrollFactor(0).setScale(3)
+        this.oxygenPointer.setFrame(1).setOrigin(0.48, 0.575).setAngle(-115)
+
         level = 1
     }
 
     update(delta){
         if (gameOver){ return }
-        console.log(item)
 
         this.timer.update(delta)
+
+        this.oxygenPointer.setAngle((((timerDuration - this.timer.seconds * 1000) / timerDuration) * 230) - 115)
+
         if (this.keyTextTimer)
             this.keyText.setPosition(400 - this.keyText.width/2, 40 - this.keyText.height/2)
         
