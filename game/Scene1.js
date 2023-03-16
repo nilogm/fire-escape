@@ -48,6 +48,9 @@ class Scene1 extends Phaser.Scene {
         this.load.audio('forcingdoor1', 'assets/sound/forcingdoor1.ogg')
         this.load.audio('forcingdoor2', 'assets/sound/forcingdoor2.ogg')
         this.load.audio('forcingdoor3', 'assets/sound/forcingdoor3.ogg')
+
+        this.load.audio('gameover', 'assets/sound/gameover.wav')
+
     }
 
     create(){
@@ -131,6 +134,8 @@ class Scene1 extends Phaser.Scene {
         this.audio_footstep = this.sound.add('footstep00')
         // Trying to open door
         this.audio_trying_open_door = this.sound.add('forcingdoor0')
+        this.audio_gameover = this.sound.add('gameover')
+        this.audio_usingitem;
 
         // UI ---------------------
         // Oxygen Meter

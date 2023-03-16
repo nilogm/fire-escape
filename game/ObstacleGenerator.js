@@ -36,7 +36,7 @@ class ObstacleGenerator{
             caution.destroy()
             this.createObstacle(x, y,sprite)
             this.scene.events.emit('shake')
-            this.scene.sound.add('obstacle').play()
+            this.scene.sound.add('obstacle').setDetune(Phaser.Math.Between(-1200,1200)).play()
         }, 1000)
     }
 
@@ -45,7 +45,7 @@ class ObstacleGenerator{
         obstacle.setCollideWorldBounds(true)
 
         this.scene.physics.add.overlap(this.scene.player, obstacle, ()=>{
-            obstacle.destroy()
+            this.scene.audio_gameover.play()
             this.scene.hitBomb()
         });
 
