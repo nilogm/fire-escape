@@ -32,6 +32,7 @@ class Scene1 extends Phaser.Scene {
         this.load.spritesheet('cloud', 'assets/cloud.png', {frameWidth: 32, frameHeight: 32})
         this.load.spritesheet('items', 'assets/items.png', {frameWidth: 32, frameHeight: 32})
         this.load.spritesheet('oxygen', 'assets/oxygen.png', {frameWidth: 32, frameHeight: 32})
+        this.load.image('fog', 'assets/fog.png')
     }
 
     create(){
@@ -52,6 +53,15 @@ class Scene1 extends Phaser.Scene {
         background.y = background.displayHeight/2
         this.xLimit = this.game.scale.width
         this.yLimit = this.game.scale.height
+
+        var width = this.game.scale.width
+        var height = this.game.scale.width
+        const rt = this.make.renderTexture({
+            width,
+            height
+        }, true)
+        rt.draw('ground')
+        rt.setTint(0x111111)
 
         // Player
         this.player = this.physics.add.sprite(350, 350, 'circle').setScale(0.025).setCollideWorldBounds(true)
@@ -162,6 +172,17 @@ class Scene1 extends Phaser.Scene {
         this.oxygenPointer = this.add.sprite(this.oxygenMeter.x - 2, this.oxygenMeter.y, 'oxygen').setScrollFactor(0).setScale(3)
         this.oxygenPointer.setFrame(1).setOrigin(0.48, 0.575).setAngle(-115)
 
+        // Fog
+        this.vision = this.make.image({
+            x: this.player.x + 4,
+            y: this.player.y + 2,
+            key: 'fog',
+            add: false
+        })
+        this.vision.scale = 0.5
+        rt.mask = new Phaser.Display.Masks.BitmapMask(this, this.vision)
+        rt.mask.invertAlpha = true
+
         level = 1
     }
 
@@ -171,6 +192,12 @@ class Scene1 extends Phaser.Scene {
         this.timer.update(delta)
 
         this.oxygenPointer.setAngle((((timerDuration - this.timer.seconds * 1000) / timerDuration) * 230) - 115)
+
+        if (this.vision)
+        {
+            this.vision.x = this.player.x
+            this.vision.y = this.player.y
+        }
 
         if (this.keyTextTimer)
             this.keyText.setPosition(400 - this.keyText.width/2, 40 - this.keyText.height/2)
@@ -262,7 +289,8 @@ class Scene1 extends Phaser.Scene {
 
             var cloud = this.extinguisherClouds.create(this.extinguisher.x, this.extinguisher.y, 'cloud')
             cloud.play("cloud_anim")
-            this.physics.velocityFromRotation(angle, 600, cloud.body.velocity)
+            var velocity = Phaser.Math.Between(550, 650)
+            this.physics.velocityFromRotation(angle, velocity, cloud.body.velocity)
             cloud.body.setDrag(1000)
 
             var cloudTimer = new Timer(this)
