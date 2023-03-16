@@ -13,9 +13,6 @@ class Scene1 extends Phaser.Scene {
         this.load.image('door', 'assets/door.png')
         this.load.image('key', 'assets/key.png')
         this.load.image('shadow', 'assets/shadow.png')
-        this.load.image('axe', 'assets/axe.png')
-        this.load.image('medkit', 'assets/medkit.png')
-        this.load.image('fire', 'assets/extinguisher.png')
 
         //SOUND ASSETS
         this.load.audio('chave_caindo', 'assets/sound/chave_caindo.wav')
@@ -31,10 +28,13 @@ class Scene1 extends Phaser.Scene {
         this.load.audio('footstep08', 'assets/sound/footstep08.ogg')
         this.load.audio('footstep09', 'assets/sound/footstep09.ogg')
         this.load.audio('obstacle', 'assets/sound/obstacle_dropping.wav')
+
+        this.load.spritesheet('cloud', 'assets/cloud.png', {frameWidth: 32, frameHeight: 32})
+        this.load.spritesheet('items', 'assets/items.png', {frameWidth: 32, frameHeight: 32})
     }
 
     create(){
-        this.time.paused=false
+        this.time.paused = false
 
         // Difficulty control
         timerDuration -= (1000 * difficultyIncrease * level)
@@ -49,14 +49,11 @@ class Scene1 extends Phaser.Scene {
         var background = this.add.image(400, 400,'ground')
         background.x = background.displayWidth/2
         background.y = background.displayHeight/2
-            // esses são os limites corretos
         this.xLimit = this.game.scale.width
         this.yLimit = this.game.scale.height
 
         // Player
-        this.player = this.physics.add.sprite(350, 350, 'circle')
-        this.player.setScale(0.025)
-        this.player.setCollideWorldBounds(true)
+        this.player = this.physics.add.sprite(350, 350, 'circle').setScale(0.025).setCollideWorldBounds(true)
         
         // Cameras
         this.cameras.main.setBounds(0, 0, this.xLimit, this.yLimit,true)
@@ -83,9 +80,7 @@ class Scene1 extends Phaser.Scene {
         this.physics.add.collider(this.player, bombs, null, null, this)
         
         // Game Over Text
-        this.gameOverText = this.add.text(0, 0, "GAME OVER!", {font: '40px Arial', fill: '#FF0000', align: 'center'}).setScrollFactor(0)
-        this.gameOverText.visible = false
-        this.gameOverText.setDepth(1)
+        this.gameOverText = this.add.text(0, 0, "GAME OVER!", {font: '40px Arial', fill: '#FF0000', align: 'center'}).setScrollFactor(0).setVisible(false).setDepth(1)
         this.gameOverText.setPosition(400 - this.gameOverText.getCenter().x, 300 - this.gameOverText.getCenter().y)
         this.gameOverText.setShadow(0, 5, '#000000', 4)
 
@@ -118,8 +113,7 @@ class Scene1 extends Phaser.Scene {
                 break;
         }
 
-        var exitDoor = this.add.rectangle(doorPosition[0], doorPosition[1], doorSize[0], doorSize[1], 0x773311)
-        exitDoor.setStrokeStyle(4, 0x333333)
+        var exitDoor = this.add.rectangle(doorPosition[0], doorPosition[1], doorSize[0], doorSize[1], 0x773311).setStrokeStyle(4, 0x333333)
         this.physics.add.existing(exitDoor)
         this.physics.add.collider(this.player, exitDoor, ()=>{this.exitLevel()}, null, this)
         exitDoor.body.setCollideWorldBounds(true).setImmovable(true)
@@ -132,42 +126,42 @@ class Scene1 extends Phaser.Scene {
         })
 
         this.hasKey = false
-        this.keyText = this.add.text(0, 0, "Requires Key!", {font: '30px Arial', fill: '#FFFF44', align: 'center'})
-        this.keyText.setShadow(0, 5, '#000000', 4).setScrollFactor(0)
-        this.keyText.visible = false
+        this.keyText = this.add.text(0, 0, "Requires Key!", {font: '30px Arial', fill: '#FFFF44', align: 'center'}).setShadow(0, 5, '#000000', 4).setScrollFactor(0).setVisible(false)
 
         // Random Object
         this.emitter = EventDispatcher.getInstance();
-        this.emitter.on('use item', () =>{
-            this.itemText.destroy()
-            item = "none"
-        })
+        this.emitter.on('use item', () =>{item = "none"})
         this.createItem(Phaser.Math.Between(0, 2), this.getPosition([0,0], [800,600], 40))
 
         // Timer
         var timeText = this.add.text(30, 30, "", {font: '30px Arial', fill: '#FFFFFF', align: 'center'}).setScrollFactor(0)
-        var endLevelText = this.add.text(30, 80, "Timer ran out!", {font: '40px Arial', fill: '#FF0000', align: 'center'}).setScrollFactor(0)
-        endLevelText.visible = false
-
         this.timer = new Timer(this, timeText)
-        this.timer.setTimer(()=>{endLevelText.visible = true}, timerDuration)
+        this.timer.setTimer(null, timerDuration)
 
         // Stats
         this.health = maxHealth
         this.healthText = this.add.text(30, 120, this.health, {font: '30px Arial', fill: '#FFFFFF', align: 'center'}).setScrollFactor(0)
 
         // Extinguisher orb
-        this.extinguisherCloud = null
-        this.playerCenter = new Phaser.Geom.Point(400, 300);
+        this.playerCenter = new Phaser.Geom.Point(400, 300)
 
         // Movement Audio
         this.audio_footstep = this.sound.add('footstep00')
+
+        // Animations
+        this.anims.create({
+            key: "cloud_anim",
+            frames: this.anims.generateFrameNumbers("cloud"),
+            frameRate: 5,
+            repeat: -1
+        })
 
         level = 1
     }
 
     update(delta){
         if (gameOver){ return }
+        console.log(item)
 
         this.timer.update(delta)
         if (this.keyTextTimer)
@@ -179,38 +173,40 @@ class Scene1 extends Phaser.Scene {
         this.movement()
         this.playerCenter.setTo(this.player.x, this.player.y)
 
+        this.extinguisherControl()
+        
+        this.cameras.main.centerOn(this.player.x, this.player.y)
+    }
+
+    extinguisherControl(){
         if (item == "fire" && this.cursors.space.isDown){
             this.emitter.emit('use item')
             this.useExtinguisher()
         }
         
-        if (this.extinguisherCloud != null)
+        if (this.extinguisher != null){
             this.aimMovement()
-        
-        this.cameras.main.centerOn(this.player.x, this.player.y)
+            var angle = Phaser.Math.Angle.Between(this.player.x, this.player.y, this.extinguisher.x, this.extinguisher.y)
+            this.extinguisher.setRotation(angle)
+            this.extinguisher.setFlipY(angle > Math.PI/2 || angle < -Math.PI/2)
+        }
     }
 
     createItem(object_key, pos=[0,0]){
-        var item_info = ["", ""]
+        var item_name
         if (object_key == 0)
-            item_info = ["axe", "Tem machado"]
+            item_name = "fire"
         else if (object_key == 1)
-            item_info = ["medkit", "Tem medkit"]
+            item_name = "medkit"
         else if (object_key == 2)
-            item_info = ["fire", "Tem extintor"]
+            item_name = "axe"
                     
-        this.itemObject = new Interactable(this, item_info[0], this.player, ()=>{
-            item = item_info[0]
-            this.itemText.setVisible(true)
+        this.itemObject = new Interactable(this, "items", this.player, ()=>{
+            item = item_name
         })
-        this.itemObject.setObject(pos, 0.1)
+        this.itemObject.obj.setFrame(object_key)
+        this.itemObject.setObject(pos, 2)
         this.itemObject.setGenerator(itemRange)
-        
-        this.itemText = this.add.text(0, 0, item_info[1], {font: '40px Arial', fill: '#FF0000', align: 'center'}).setVisible(false).setScrollFactor(0)
-        this.itemText.setPosition(800 - 200 - this.itemText.width / 2, 600 - 100 - this.itemText.height / 2)
-        
-        if (item != "none")
-            this.itemText.setVisible(true)
     }
 
     hitBomb()
@@ -227,6 +223,7 @@ class Scene1 extends Phaser.Scene {
 
     cloudHit(cloud, obstacle){
         obstacle.destroy()
+        cloud.destroy()
     }
 
     endGame(){
@@ -245,13 +242,31 @@ class Scene1 extends Phaser.Scene {
     }
 
     useExtinguisher(){
-        this.extinguisherCloud = this.add.circle(this.player.x, this.player.y, 30, 0xFDFDFD, 100).setVisible(true)
-        this.physics.add.existing(this.extinguisherCloud)
-        this.physics.add.collider(bombs, this.extinguisherCloud, this.cloudHit, null, this)
+        this.extinguisher = this.add.sprite(this.player.x + 40, this.player.y, 'items').setScale(2)
+        this.extinguisher.setFrame(0)
+        
+        this.extinguisherClouds = this.physics.add.group()
+        this.physics.add.collider(this.extinguisherClouds, bombs, this.cloudHit, null, this)
+
+        var generatorTimer = new Timer(this)
+        generatorTimer.setTimer(()=>{
+            var angle = Phaser.Math.Angle.Between(this.player.x, this.player.y, this.extinguisher.x, this.extinguisher.y)
+
+            var cloud = this.extinguisherClouds.create(this.extinguisher.x, this.extinguisher.y, 'cloud')
+            cloud.play("cloud_anim")
+            this.physics.velocityFromRotation(angle, 600, cloud.body.velocity)
+            cloud.body.setDrag(1000)
+
+            var cloudTimer = new Timer(this)
+            cloudTimer.setTimer(()=>{
+                cloud.destroy()
+            }, 400)
+        }, 100, true)
 
         var timer = new Timer(this)
         timer.setTimer(()=>{
-            this.extinguisherCloud.destroy()
+            this.extinguisher.destroy()
+            generatorTimer.stop()
         }, 5000)
     }
 
@@ -296,84 +311,66 @@ class Scene1 extends Phaser.Scene {
             this.health += amount
     }
 
-    updateAngle(amount, max){
-        if (this.aimAngle + amount > 360)
-            this.aimAngle -= 360
-
-        if (amount > 0){
-            if (this.aimAngle + amount >= max)
-                this.aimAngle = max
-            else
-                this.aimAngle += amount
-        }
-        else {
-            if (this.aimAngle + amount <= max)
-                this.aimAngle = max
-            else
-                this.aimAngle += amount
-        }
-    }   
-
     aimMovement(){
-        var angle = Phaser.Math.Angle.Between(this.extinguisherCloud.x, this.extinguisherCloud.y, this.player.x, this.player.y)
+        var angle = Phaser.Math.Angle.Between(this.extinguisher.x, this.extinguisher.y, this.player.x, this.player.y)
 
         if (this.cursors.left.isDown){
             if (angle >= 0){
                 if (angle - aimVelocity < 0)
-                    Phaser.Actions.RotateAroundDistance([this.extinguisherCloud], this.playerCenter, -angle, aimRadius)
+                    Phaser.Actions.RotateAroundDistance([this.extinguisher], this.playerCenter, -angle, aimRadius)
                 else 
-                    Phaser.Actions.RotateAroundDistance([this.extinguisherCloud], this.playerCenter, -aimVelocity, aimRadius)
+                    Phaser.Actions.RotateAroundDistance([this.extinguisher], this.playerCenter, -aimVelocity, aimRadius)
             }
             else {
                 if (angle + aimVelocity > 0)
-                    Phaser.Actions.RotateAroundDistance([this.extinguisherCloud], this.playerCenter, -angle, aimRadius)
+                    Phaser.Actions.RotateAroundDistance([this.extinguisher], this.playerCenter, -angle, aimRadius)
                 else 
-                    Phaser.Actions.RotateAroundDistance([this.extinguisherCloud], this.playerCenter, aimVelocity, aimRadius)
+                    Phaser.Actions.RotateAroundDistance([this.extinguisher], this.playerCenter, aimVelocity, aimRadius)
             }
         }
 
         if (this.cursors.right.isDown){
             if (angle >= 0){
                 if (angle + aimVelocity > Math.PI)
-                    Phaser.Actions.RotateAroundDistance([this.extinguisherCloud], this.playerCenter, Math.PI - angle, aimRadius)
+                    Phaser.Actions.RotateAroundDistance([this.extinguisher], this.playerCenter, Math.PI - angle, aimRadius)
                 else 
-                    Phaser.Actions.RotateAroundDistance([this.extinguisherCloud], this.playerCenter, aimVelocity, aimRadius)
+                    Phaser.Actions.RotateAroundDistance([this.extinguisher], this.playerCenter, aimVelocity, aimRadius)
             }
             else {
                 if (angle - aimVelocity < -Math.PI)
-                    Phaser.Actions.RotateAroundDistance([this.extinguisherCloud], this.playerCenter, - angle - Math.PI, aimRadius)
+                    Phaser.Actions.RotateAroundDistance([this.extinguisher], this.playerCenter, - angle - Math.PI, aimRadius)
                 else 
-                    Phaser.Actions.RotateAroundDistance([this.extinguisherCloud], this.playerCenter, -aimVelocity, aimRadius)
+                    Phaser.Actions.RotateAroundDistance([this.extinguisher], this.playerCenter, -aimVelocity, aimRadius)
             }
         }
 
         if (this.cursors.up.isDown){
             if (angle >= Math.PI/2 || angle <= -Math.PI/2){
                 if (angle >= Math.PI/2 && angle - aimVelocity < Math.PI/2)
-                    Phaser.Actions.RotateAroundDistance([this.extinguisherCloud], this.playerCenter, Math.PI/2 - angle, aimRadius)
+                    Phaser.Actions.RotateAroundDistance([this.extinguisher], this.playerCenter, Math.PI/2 - angle, aimRadius)
                 else 
-                    Phaser.Actions.RotateAroundDistance([this.extinguisherCloud], this.playerCenter, -aimVelocity, aimRadius)
+                    Phaser.Actions.RotateAroundDistance([this.extinguisher], this.playerCenter, -aimVelocity, aimRadius)
             }
             else {
                 if (angle + aimVelocity > Math.PI/2)
-                    Phaser.Actions.RotateAroundDistance([this.extinguisherCloud], this.playerCenter, Math.PI/2 - angle, aimRadius)
+                    Phaser.Actions.RotateAroundDistance([this.extinguisher], this.playerCenter, Math.PI/2 - angle, aimRadius)
                 else 
-                    Phaser.Actions.RotateAroundDistance([this.extinguisherCloud], this.playerCenter, aimVelocity, aimRadius)
+                    Phaser.Actions.RotateAroundDistance([this.extinguisher], this.playerCenter, aimVelocity, aimRadius)
             }
         }
 
         if (this.cursors.down.isDown){
             if (angle >= Math.PI/2 || angle <= -Math.PI/2){
                 if (angle <= -Math.PI/2 && angle + aimVelocity > -Math.PI/2)
-                    Phaser.Actions.RotateAroundDistance([this.extinguisherCloud], this.playerCenter, - Math.PI/2 - angle, aimRadius)
+                    Phaser.Actions.RotateAroundDistance([this.extinguisher], this.playerCenter, - Math.PI/2 - angle, aimRadius)
                 else 
-                    Phaser.Actions.RotateAroundDistance([this.extinguisherCloud], this.playerCenter, aimVelocity, aimRadius)
+                    Phaser.Actions.RotateAroundDistance([this.extinguisher], this.playerCenter, aimVelocity, aimRadius)
             }
             else {
                 if (angle - aimVelocity < -Math.PI/2)
-                    Phaser.Actions.RotateAroundDistance([this.extinguisherCloud], this.playerCenter, - Math.PI/2 - angle, aimRadius)
+                    Phaser.Actions.RotateAroundDistance([this.extinguisher], this.playerCenter, - Math.PI/2 - angle, aimRadius)
                 else 
-                    Phaser.Actions.RotateAroundDistance([this.extinguisherCloud], this.playerCenter, -aimVelocity, aimRadius)
+                    Phaser.Actions.RotateAroundDistance([this.extinguisher], this.playerCenter, -aimVelocity, aimRadius)
             }
         }
     }

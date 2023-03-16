@@ -37,7 +37,7 @@ var bombFrequency = 500
 var bombOnContact = false
 
 // "none" / "medkit" / "fire" / "axe"
-var item = "none"
+var item = "fire"
 
 var aimRadius = 40
 var aimVelocity = Math.PI/10

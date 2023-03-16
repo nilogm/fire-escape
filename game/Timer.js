@@ -49,7 +49,8 @@ class Timer
                 this.seconds = 0
                 if (!loop)
                     this.stop()
-                callback()
+                if (callback != null)
+                    callback()
             }
         })
     }
