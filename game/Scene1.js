@@ -50,6 +50,10 @@ class Scene1 extends Phaser.Scene {
         this.load.audio('forcingdoor1', 'assets/sound/forcingdoor1.ogg')
         this.load.audio('forcingdoor2', 'assets/sound/forcingdoor2.ogg')
         this.load.audio('forcingdoor3', 'assets/sound/forcingdoor3.ogg')
+        
+        this.load.audio('door_break', 'assets/sound/door_ripped.wav')
+        this.load.audio('usemedkit', 'assets/sound/usemedkit.wav')
+        this.load.audio('firextinguisher', 'assets/sound/fireextinguisher.mp3')
 
         this.load.audio('gameover', 'assets/sound/gameover.wav')
 
@@ -106,19 +110,20 @@ class Scene1 extends Phaser.Scene {
 
         // Exit Door
         var doorPosition = this.createDoor()
-
+        
         // Key
         this.setKey(doorPosition)
         this.physics.add.overlap(this.exitDoor, this.key.obj, ()=>{
             var keyPosition = this.getPosition([0,0], [800,600], 40)
             this.key.obj.setPosition(keyPosition[0], keyPosition[1])
         })
-
+        
         // Random Object
+        this.audio_usingitem = this.sound.add('firextinguisher');
         this.itemHUD;
         this.showItemHUD()
         this.emitter = EventDispatcher.getInstance();
-        this.emitter.on('use item', () =>{item = 'none';this.itemHUD.destroy()})
+        this.emitter.on('use item', () =>{item = 'none';this.audio_usingitem.play();this.itemHUD.destroy()})
         this.createItem(Phaser.Math.Between(0, 2), this.getPosition([0,0], [800,600], 40))
 
         // Environment
@@ -153,7 +158,6 @@ class Scene1 extends Phaser.Scene {
         // Trying to open door
         this.audio_trying_open_door = this.sound.add('forcingdoor0')
         this.audio_gameover = this.sound.add('gameover')
-        this.audio_usingitem;
 
         // UI ---------------------
         // Oxygen Meter
@@ -231,11 +235,18 @@ class Scene1 extends Phaser.Scene {
         if (object_key == 0)
             item_name = "fire"
         else if (object_key == 1)
-            item_name = "medkit"
+            item_name = "medkit"      
         else if (object_key == 2)
             item_name = "axe"
-                    
+                       
         this.itemObject = new Interactable(this, 'items', this.player, ()=>{
+            if (object_key == 0)
+                this.audio_usingitem = this.sound.add('firextinguisher')
+            else if (object_key == 1)
+                this.audio_usingitem = this.sound.add('usemedkit')
+            else if (object_key == 2)
+                this.audio_usingitem = this.sound.add('door_break')
+
             item = item_name
             this.showItemHUD()
         })
@@ -494,16 +505,20 @@ class Scene1 extends Phaser.Scene {
         if(item == 'none') return;
         else{
             if(this.itemHUD) this.itemHUD.destroy()
+            if(this.audio_usingitem) this.audio_usingitem.destroy()
             switch (item) {
                 case 'medkit':
+                    this.audio_usingitem = this.sound.add('usemedkit')
                     this.itemHUD = this.add.image(this.game.scale.width/2 +60,500,'medkit').setScale(0.5).setDepth(3).setScrollFactor(0)
                     break;
 
                 case 'axe':
+                    this.audio_usingitem = this.sound.add('door_break')
                     this.itemHUD = this.add.image(this.game.scale.width/2 +60,500,'axe').setScale(0.5).setDepth(3).setScrollFactor(0)
                     break;
 
                 case 'fire':
+                    this.audio_usingitem = this.sound.add('firextinguisher')
                     this.itemHUD = this.add.image(this.game.scale.width/2 +60, 500,'fire').setScale(0.5).setDepth(3).setScrollFactor(0)
                     break;
                 default:
