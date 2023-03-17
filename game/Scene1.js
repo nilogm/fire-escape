@@ -6,29 +6,26 @@ class Scene1 extends Phaser.Scene {
 
     preload(){
         // IMAGE AND SPRITES
-        this.load.image('caution', 'assets/caution.png')
         this.load.image('ground', 'assets/ground2.png')
         this.load.image('circle', 'assets/circle.png')
-        //this.load.image('bomb', 'assets/bomb.png')
         this.load.image('door', 'assets/door.png')
+        
         this.load.image('key', 'assets/key.png')
+        this.load.image('fog', 'assets/fog.png')
         this.load.image('shadow', 'assets/shadow.png')
-
-        this.load.image('fire', 'assets/Extintor.png')
-        this.load.image('axe', 'assets/Machado.png')
-        this.load.image('medkit', 'assets/MedKit.png')
-        this.load.image('obstacle1', 'assets/Obstaculo1.png')
-        this.load.image('obstacle2', 'assets/Obstaculo2.png')
-        this.load.image('obstacle3', 'assets/Obstaculo3.png')
-        this.load.image('obstacle4', 'assets/Obstaculo4.png')
-
         this.load.spritesheet('cloud', 'assets/cloud.png', {frameWidth: 32, frameHeight: 32})
         this.load.spritesheet('items', 'assets/items.png', {frameWidth: 32, frameHeight: 32})
         this.load.spritesheet('oxygen', 'assets/oxygen.png', {frameWidth: 32, frameHeight: 32})
         this.load.spritesheet('obstacles', 'assets/obstacles.png', {frameWidth: 32, frameHeight: 32})
         this.load.spritesheet('ambient', 'assets/ambient.png', {frameWidth: 32, frameHeight: 64})
-        this.load.image('fog', 'assets/fog.png')
-
+        this.load.spritesheet('player', 'assets/player.png', {frameWidth: 32, frameHeight: 32})
+        this.load.spritesheet('small_flame', 'assets/small_flame.png', {frameWidth: 32, frameHeight: 32})
+        this.load.spritesheet('medium_flame', 'assets/medium_flame.png', {frameWidth: 32, frameHeight: 32})
+        this.load.spritesheet('big_flame', 'assets/big_flame.png', {frameWidth: 32, frameHeight: 32})
+        this.load.spritesheet('fire1', 'assets/fire1.png', {frameWidth: 32, frameHeight: 32})
+        this.load.spritesheet('fire2', 'assets/fire2.png', {frameWidth: 32, frameHeight: 32})
+        this.load.spritesheet('fire3', 'assets/fire3.png', {frameWidth: 32, frameHeight: 32})
+        this.load.image('tiles', 'assets/tilemap.png', {frameWidth: 32, frameHeight: 32})
 
         //SOUND ASSETS
         this.load.audio('chave_caindo', 'assets/sound/chave_caindo.wav')
@@ -73,74 +70,70 @@ class Scene1 extends Phaser.Scene {
         keyRange[1] = timerDuration * 0.8
         bombFrequency -= (100 * difficultyIncrease * level)
         maxHealth -= (50 * difficultyIncrease * level)
+
+        var width = 1920
+        var height = 1080
         
-        // Background Image
-        var background = this.add.image(400, 400,'ground')
-        background.x = background.displayWidth/2
-        background.y = background.displayHeight/2
-        this.xLimit = this.game.scale.width
-        this.yLimit = this.game.scale.height
-        
-        // Pre-fog
-        var width = this.game.scale.width
-        var height = this.game.scale.height
-        const rt = this.make.renderTexture({
-            width,
-            height
-        }, true)
-        rt.draw('ground')
-        // rt.setTint(0x111111).setDepth(2)
+        this.map = new Map(this, width, height)
+        this.map.setFog()
+
+        var worldOffset = 128
+        this.physics.world.setBounds(worldOffset, worldOffset, width - 2 * worldOffset, height - 2 * worldOffset)
 
         // Stats
         hasKey = false
-        this.health = maxHealth
+
+        // SFX --------------------
+        // Trying to open door
+        this.audio_trying_open_door = this.sound.add('forcingdoor0')
+        this.audio_gameover = this.sound.add('gameover')
+        this.audio_usingitem;
         
         // Player
-        this.player = this.physics.add.sprite(350, 350, 'circle').setScale(0.025).setCollideWorldBounds(true)
-        this.playerCenter = new Phaser.Geom.Point()
+        var footsteps = this.sound.add('footstep00')
+        this.player = new Player(this, width, height, maxHealth, footsteps)
+
+        // Tile Generator
+        var tileGenerator = new TileGenerator(this, this.player)
+        tileGenerator.setFireAnimations(this.anims)
         
         // Cameras
-        this.cameras.main.setBounds(0, 0, this.xLimit, this.yLimit,true)
+        this.cameras.main.setBounds(0, 0, width, height, true)
         
         // Controls
         this.cursors = this.input.keyboard.createCursorKeys()
         
         // Bombs
         bombs = this.physics.add.group()
-        this.physics.add.collider(this.player, bombs, null, null, this)
-        var obstacle_generator = new ObstacleGenerator(this)
-        obstacle_generator.setGenerator([0, 0, 800, 600], bombFrequency)
+        this.physics.add.collider(this.player.obj, bombs, null, null, this)
+        var obstacle_generator = new ObstacleGenerator(this, tileGenerator)
+        obstacle_generator.setGenerator([worldOffset, worldOffset, width - 2 * worldOffset, height - 2 * worldOffset], bombFrequency)
 
         // Exit Door
         var doorPosition = this.createDoor()
-        
+
         // Key
         this.setKey(doorPosition)
         this.physics.add.overlap(this.exitDoor, this.key.obj, ()=>{
-            var keyPosition = this.getPosition([0,0], [800,600], 40)
+            var keyPosition = this.getPosition([0,0], [width,height], 40)
             this.key.obj.setPosition(keyPosition[0], keyPosition[1])
         })
-        
+
         // Random Object
         this.audio_usingitem = this.sound.add('firextinguisher');
         this.itemHUD;
         this.showItemHUD()
         this.emitter = EventDispatcher.getInstance();
-        this.emitter.on('use item', () =>{item = 'none';this.audio_usingitem.play();this.itemHUD.destroy()})
-        this.createItem(Phaser.Math.Between(0, 2), this.getPosition([0,0], [800,600], 40))
+        this.emitter.on('use item', () =>{
+            item = 'none'
+            this.audio_usingitem.play()
+            this.itemHUD.destroy()
+        })
+        this.createItem(Phaser.Math.Between(0, 2), this.getPosition([0,0], [width,height], 40))
 
         // Environment
-        // var water_tank = this.physics.add.sprite(300, 300, 'ambient').setScale(3).setFrame(0).setCollideWorldBounds(true)
-        // water_tank.setCircle(8, 8, 42).setImmovable(true)
-        // var water_tank = this.physics.add.sprite(300, 300, 'ambient').setScale(3).setFrame(1).setCollideWorldBounds(true)
-        // water_tank.setCircle(12, 4, 38).setImmovable(true)
-        // var water_tank = this.physics.add.sprite(300, 300, 'ambient').setScale(2).setFrame(2).setCollideWorldBounds(true).setImmovable(true)
-        // water_tank.setBodySize(22, 60)
-        // var water_tank = this.physics.add.sprite(300, 300, 'ambient').setScale(3).setFrame(3).setCollideWorldBounds(true)
-        // water_tank.setCircle(13, 3, 36).setImmovable(true)
-        // var water_tank = this.physics.add.sprite(300, 300, 'ambient').setScale(3).setFrame(4).setCollideWorldBounds(true)
-        // water_tank.setCircle(8, 8, 42).setImmovable(true)
-        // this.physics.add.collider(water_tank, this.player);
+        tileGenerator.setEnvironment('water', 200, 200)
+        tileGenerator.setEnvironment('chair', 400, 200)
 
         // Timer
         this.timer = new Timer(this)
@@ -154,31 +147,12 @@ class Scene1 extends Phaser.Scene {
             frameRate: 5,
             repeat: -1
         })
+        this.player.setAnimations(this.anims)
 
-        // SFX --------------------
-        // Movement Audio
-        this.audio_footstep = this.sound.add('footstep00')
-        // Trying to open door
-        this.audio_trying_open_door = this.sound.add('forcingdoor0')
-        this.audio_gameover = this.sound.add('gameover')
-
-        // UI ---------------------
         // Oxygen Meter
-        this.oxygenMeter = this.add.sprite(width/2, 500, 'oxygen').setScrollFactor(0).setScale(3).setDepth(3)
-        this.oxygenPointer = this.add.sprite(this.oxygenMeter.x - 2, this.oxygenMeter.y, 'oxygen').setScrollFactor(0).setScale(3).setDepth(3)
+        this.oxygenMeter = this.add.sprite(100, 100, 'oxygen').setScrollFactor(0).setScale(3).setDepth(3000)
+        this.oxygenPointer = this.add.sprite(this.oxygenMeter.x - 2, this.oxygenMeter.y, 'oxygen').setScrollFactor(0).setScale(3).setDepth(3000)
         this.oxygenPointer.setFrame(1).setOrigin(0.48, 0.575).setAngle(-115)
-
-        // FX ---------------------
-        // Fog 
-        this.vision = this.make.image({
-            x: this.player.x + 4,
-            y: this.player.y + 2,
-            key: 'fog',
-            add: false
-        })
-        this.vision.scale = 1
-        rt.mask = new Phaser.Display.Masks.BitmapMask(this, this.vision)
-        rt.mask.invertAlpha = true
 
         // Fade Effect + Zoom
         this.cameras.main.zoomTo(1.2, cameraFXOffset)
@@ -197,26 +171,19 @@ class Scene1 extends Phaser.Scene {
     }
 
     update(delta){
-        if (gameOver){ return; }
+        if (gameOver){ return }
 
         this.timer.update(delta)
 
         this.oxygenPointer.setAngle((((timerDuration - this.timer.seconds * 1000) / timerDuration) * 230) - 115)
 
-        if (this.vision)
-        {
-            this.vision.x = this.player.x + 4
-            this.vision.y = this.player.y + 2
-        }
-        
-        this.player.setTint(0xffaaaa * ((maxHealth - this.health)/maxHealth))
-        
-        this.movement()
-        this.playerCenter.setTo(this.player.x, this.player.y)
+        this.map.updateFogPosition(this.player)
+                
+        this.player.update(this.cursors)
 
         this.extinguisherControl()
         
-        this.cameras.main.centerOn(this.player.x, this.player.y)
+        this.cameras.main.centerOn(this.player.obj.x, this.player.obj.y)
     }
 
     extinguisherControl(){
@@ -226,8 +193,8 @@ class Scene1 extends Phaser.Scene {
         }
         
         if (this.extinguisher != null){
-            this.aimMovement()
-            var angle = Phaser.Math.Angle.Between(this.player.x, this.player.y, this.extinguisher.x, this.extinguisher.y)
+            this.player.aimMovement(this.cursors, this.extinguisher)
+            var angle = Phaser.Math.Angle.Between(this.player.obj.x, this.player.obj.y, this.extinguisher.x, this.extinguisher.y)
             this.extinguisher.setRotation(angle)
             this.extinguisher.setFlipY(angle > Math.PI/2 || angle < -Math.PI/2)
         }
@@ -238,10 +205,10 @@ class Scene1 extends Phaser.Scene {
         if (object_key == 0)
             item_name = "fire"
         else if (object_key == 1)
-            item_name = "medkit"      
+            item_name = "medkit"
         else if (object_key == 2)
             item_name = "axe"
-                       
+
         this.itemObject = new Interactable(this, 'items', this.player, ()=>{
             this.sound.add('getitem').play()
             if (object_key == 0)
@@ -265,7 +232,7 @@ class Scene1 extends Phaser.Scene {
             this.emitter.emit('use item')
         else {
             this.physics.pause()
-            this.player.setTint(0xff0000)
+            this.player.obj.setTint(0xff0000)
             this.endGame()
             gameOver = true
         }
@@ -297,7 +264,7 @@ class Scene1 extends Phaser.Scene {
     }
 
     useExtinguisher(){
-        this.extinguisher = this.add.sprite(this.player.x + 40, this.player.y, 'items').setScale(2)
+        this.extinguisher = this.add.sprite(this.player.obj.x + 40, this.player.obj.y, 'items').setScale(2)
         this.extinguisher.setFrame(0)
         
         this.extinguisherClouds = this.physics.add.group()
@@ -305,10 +272,10 @@ class Scene1 extends Phaser.Scene {
 
         var generatorTimer = new Timer(this)
         generatorTimer.setTimer(()=>{
-            var angle = Phaser.Math.Angle.Between(this.player.x, this.player.y, this.extinguisher.x, this.extinguisher.y)
+            var angle = Phaser.Math.Angle.Between(this.player.obj.x, this.player.obj.y, this.extinguisher.x, this.extinguisher.y)
 
             var cloud = this.extinguisherClouds.create(this.extinguisher.x, this.extinguisher.y, 'cloud')
-            cloud.play("cloud_anim")
+            cloud.play("cloud_anim", true)
             var velocity = Phaser.Math.Between(550, 650)
             this.physics.velocityFromRotation(angle, velocity, cloud.body.velocity)
             cloud.body.setDrag(1000)
@@ -376,7 +343,7 @@ class Scene1 extends Phaser.Scene {
 
         this.exitDoor = this.add.rectangle(doorPosition[0], doorPosition[1], doorSize[0], doorSize[1], 0x773311).setStrokeStyle(4, 0x333333)
         this.physics.add.existing(this.exitDoor)
-        this.physics.add.collider(this.player, this.exitDoor, ()=>{this.exitLevel()}, null, this)
+        this.physics.add.collider(this.player.obj, this.exitDoor, ()=>{this.exitLevel()}, null, this)
         this.exitDoor.body.setCollideWorldBounds(true).setImmovable(true)
 
         return doorPosition
@@ -384,125 +351,15 @@ class Scene1 extends Phaser.Scene {
 
     setKey(pos=[0,0]){
         // Creates key object
-        this.key = new Interactable(this, 'key', this.player, ()=>{
+        this.key = new Interactable(this, 'key', this.player.obj, ()=>{
             this.hasKey = true
         }, "chave_caindo", "porta_abrindo")
-        this.key.setObject(pos, 0.05)
+        this.key.setObject(pos, 2)
         this.key.setGenerator(keyRange)
     }
 
     getPosition(min=[0, 0], max=[800, 600], offset=0){
         return [Phaser.Math.Between(min[0] + offset, max[0] - offset), Phaser.Math.Between(min[1] + offset, max[1] - offset)]
-    }
-
-    updateHealth(amount){
-        if (this.health + amount > maxHealth)
-            this.health = maxHealth
-        else if (this.health + amount < 0)
-            this.health = 0
-        else 
-            this.health += amount
-    }
-
-    aimMovement(){
-        var angle = Phaser.Math.Angle.Between(this.extinguisher.x, this.extinguisher.y, this.player.x, this.player.y)
-
-        if (this.cursors.left.isDown){
-            if (angle >= 0){
-                if (angle - aimVelocity < 0)
-                    Phaser.Actions.RotateAroundDistance([this.extinguisher], this.playerCenter, -angle, aimRadius)
-                else 
-                    Phaser.Actions.RotateAroundDistance([this.extinguisher], this.playerCenter, -aimVelocity, aimRadius)
-            }
-            else {
-                if (angle + aimVelocity > 0)
-                    Phaser.Actions.RotateAroundDistance([this.extinguisher], this.playerCenter, -angle, aimRadius)
-                else 
-                    Phaser.Actions.RotateAroundDistance([this.extinguisher], this.playerCenter, aimVelocity, aimRadius)
-            }
-        }
-
-        if (this.cursors.right.isDown){
-            if (angle >= 0){
-                if (angle + aimVelocity > Math.PI)
-                    Phaser.Actions.RotateAroundDistance([this.extinguisher], this.playerCenter, Math.PI - angle, aimRadius)
-                else 
-                    Phaser.Actions.RotateAroundDistance([this.extinguisher], this.playerCenter, aimVelocity, aimRadius)
-            }
-            else {
-                if (angle - aimVelocity < -Math.PI)
-                    Phaser.Actions.RotateAroundDistance([this.extinguisher], this.playerCenter, - angle - Math.PI, aimRadius)
-                else 
-                    Phaser.Actions.RotateAroundDistance([this.extinguisher], this.playerCenter, -aimVelocity, aimRadius)
-            }
-        }
-
-        if (this.cursors.up.isDown){
-            if (angle >= Math.PI/2 || angle <= -Math.PI/2){
-                if (angle >= Math.PI/2 && angle - aimVelocity < Math.PI/2)
-                    Phaser.Actions.RotateAroundDistance([this.extinguisher], this.playerCenter, Math.PI/2 - angle, aimRadius)
-                else 
-                    Phaser.Actions.RotateAroundDistance([this.extinguisher], this.playerCenter, -aimVelocity, aimRadius)
-            }
-            else {
-                if (angle + aimVelocity > Math.PI/2)
-                    Phaser.Actions.RotateAroundDistance([this.extinguisher], this.playerCenter, Math.PI/2 - angle, aimRadius)
-                else 
-                    Phaser.Actions.RotateAroundDistance([this.extinguisher], this.playerCenter, aimVelocity, aimRadius)
-            }
-        }
-
-        if (this.cursors.down.isDown){
-            if (angle >= Math.PI/2 || angle <= -Math.PI/2){
-                if (angle <= -Math.PI/2 && angle + aimVelocity > -Math.PI/2)
-                    Phaser.Actions.RotateAroundDistance([this.extinguisher], this.playerCenter, - Math.PI/2 - angle, aimRadius)
-                else 
-                    Phaser.Actions.RotateAroundDistance([this.extinguisher], this.playerCenter, aimVelocity, aimRadius)
-            }
-            else {
-                if (angle - aimVelocity < -Math.PI/2)
-                    Phaser.Actions.RotateAroundDistance([this.extinguisher], this.playerCenter, - Math.PI/2 - angle, aimRadius)
-                else 
-                    Phaser.Actions.RotateAroundDistance([this.extinguisher], this.playerCenter, -aimVelocity, aimRadius)
-            }
-        }
-    }
-
-    movement(){
-        if (this.cursors.left.isDown && this.player.x >= 0 && !this.cursors.right.isDown)
-            this.player.setVelocityX(-velocity)
-        else if (this.cursors.right.isDown && this.player.x <= this.xLimit && !this.cursors.left.isDown)
-            this.player.setVelocityX(velocity)
-        else 
-            this.player.setVelocityX(0)
-        
-        if (this.cursors.up.isDown && this.player.y >= 0 && !this.cursors.down.isDown)
-            this.player.setVelocityY(-velocity)
-        else if (this.cursors.down.isDown && this.player.y <= this.yLimit && !this.cursors.up.isDown)
-            this.player.setVelocityY(velocity)
-        else
-            this.player.setVelocityY(0)
-
-        // CASO O PERSONAGEM NÃO ESTEJA ANDANDO POR CONTA DE BOTOES SIMULTANEAMENTE APERTADOS ELE TOMA DANO
-        if ((this.cursors.up.isDown && this.cursors.down.isDown && (!this.cursors.right.isDown && !this.cursors.left.isDown)) 
-             || (this.cursors.right.isDown && this.cursors.left.isDown && (!this.cursors.up.isDown && !this.cursors.down.isDown))
-             || (this.cursors.up.isDown && this.cursors.right.isDown && this.cursors.left.isDown && this.cursors.down.isDown))    {
-            this.updateHealth(2 * -movementPenalty * maxHealth)
-        }
-        if (this.cursors.up.isDown || this.cursors.right.isDown || this.cursors.left.isDown || this.cursors.down.isDown){
-            this.updateHealth(movementPenalty * maxHealth)
-            if(!this.audio_footstep.isPlaying){
-                var aud = Phaser.Math.Between(0,9)
-                var aud_name = 'footstep0' + aud
-                this.audio_footstep.destroy()
-                this.audio_footstep = this.sound.add(aud_name)
-                this.audio_footstep.setVolume(0.3)
-                this.audio_footstep.play()
-            }
-        }
-        else{
-            this.updateHealth(2 * -movementPenalty * maxHealth)
-        }
     }
 
     showItemHUD(){
@@ -513,21 +370,22 @@ class Scene1 extends Phaser.Scene {
             switch (item) {
                 case 'medkit':
                     this.audio_usingitem = this.sound.add('usemedkit')
-                    this.itemHUD = this.add.image(this.game.scale.width/2 +60,500,'medkit').setScale(0.5).setDepth(3).setScrollFactor(0)
+                    this.itemHUD = this.add.image(this.game.scale.width/2 + 60, 500,'medkit').setScale(0.5).setDepth(3).setScrollFactor(0)
                     break;
 
                 case 'axe':
                     this.audio_usingitem = this.sound.add('door_break')
-                    this.itemHUD = this.add.image(this.game.scale.width/2 +60,500,'axe').setScale(0.5).setDepth(3).setScrollFactor(0)
+                    this.itemHUD = this.add.image(this.game.scale.width/2 + 60, 500,'axe').setScale(0.5).setDepth(3).setScrollFactor(0)
                     break;
 
                 case 'fire':
                     this.audio_usingitem = this.sound.add('firextinguisher')
-                    this.itemHUD = this.add.image(this.game.scale.width/2 +60, 500,'fire').setScale(0.5).setDepth(3).setScrollFactor(0)
+                    this.itemHUD = this.add.image(this.game.scale.width/2 + 60, 500,'fire').setScale(0.5).setDepth(3).setScrollFactor(0)
                     break;
                 default:
                     break;
             }
         }
     }
+    
 }
