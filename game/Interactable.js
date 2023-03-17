@@ -6,6 +6,7 @@ class Interactable{
         this.sound_on_fall = sound_on_fall
         this.sound_on_pick = sound_on_pick
         this.obj = this.scene.physics.add.sprite(0, 0, sprite).setCollideWorldBounds(true)
+        this.obj.setCircle(10, 6, 8)
     }
 
     setObject(pos=[0,0], scale=0.5){

@@ -8,10 +8,12 @@ class ObstacleGenerator{
     /**
 	 * 
 	 * @param {Phaser.Scene} scene
+     * @param {TileGenerator} tileGenerator
 	 */
-    constructor(scene)
+    constructor(scene, tileGenerator)
 	{
 		this.scene = scene
+        this.tileGenerator = tileGenerator
 	}
 
     setGenerator(info=[0,0,0,0], frequency=1000){
@@ -23,7 +25,7 @@ class ObstacleGenerator{
         this.timerEvent = new Timer(this.scene)
         this.timerEvent.setTimer(()=>{
             this.generate()
-        }, 10000, true)
+        }, frequency, true)
     }
 
     generate(){
@@ -31,10 +33,10 @@ class ObstacleGenerator{
         var y = Phaser.Math.Between(this.minY, this.maxY);
         var caution = this.scene.add.image(x, y,'shadow').setScale(0.1);
 
-        var sprite = Phaser.Math.Between(2, 2)
+        var sprite = Phaser.Math.Between(0, 2)
         var info = [0, 0, 0, 0]
-
-        var obstacle_falling = this.scene.physics.add.sprite(x, 0, 'obstacles').setScale(2)
+        
+        var obstacle_falling = this.scene.physics.add.sprite(x, 0, 'obstacles').setScale(2).setDepth(y)
         if (sprite == 0){
             obstacle_falling.setFrame(0)
             info = [0, 9, 6, 10]
@@ -48,40 +50,49 @@ class ObstacleGenerator{
             info = [3, 9, 6, 10]
         }
 
+        var flip = Phaser.Math.Between(0, 1)
+        if (flip == 1)
+            obstacle_falling.setFlipX(true)
+        
+        var fire = this.tileGenerator.setFire(x, 0, 3)
+        fire.setVelocity(0, y).setDepth(y + 1)
+
         obstacle_falling.setVelocity(0, y)
 
         var event = new Timer(this.scene)
         event.setTimer(()=>{
             obstacle_falling.destroy()
+            fire.setVelocity(0, 0)
             caution.destroy()
-            this.createObstacle(x, y, info[0], info[1], info[2], info[3])
+            this.createObstacle(x, y, info[0], info[1], info[2], info[3], flip, fire)
             this.scene.events.emit('shake')
             this.scene.sound.add('obstacle').setDetune(Phaser.Math.Between(-1200,1200)).play()
         }, 1000)
     }
 
-    createObstacle(x, y, frame, radius, offsetX, offsetY){
+    createObstacle(x, y, frame, radius, offsetX, offsetY, flip, fire){
         var obstacle = bombs.create(x, y, 'obstacles').setImmovable(true).setScale(2).refreshBody().setFrame(frame)
-        obstacle.setCircle(radius, offsetX, offsetY)
+        obstacle.setCircle(radius, offsetX, offsetY).setDepth(y)
         obstacle.setCollideWorldBounds(true)
 
-        this.scene.physics.add.overlap(this.scene.player, obstacle, ()=>{
+        obstacle.on('destroy', ()=>{
+            bombs.remove(obstacle, true, true)
+            fire.destroy()
+        })
+
+        if (flip == 1)
+            obstacle.setFlipX(true)
+
+        this.scene.physics.add.overlap(this.scene.player.obj, obstacle, ()=>{
             this.scene.audio_gameover.play()
             this.scene.hitBomb()
         });
 
-        this.killTimer(obstacle)
-    }
-
-    /**
-     * 
-     * @param {Phaser.GameObjects.GameObject} bomb 
-     */
-    killTimer(bomb){
         this.scene.time.addEvent({
-            delay: 30000,
+            delay: 3000,
             callback: () => {
-                bombs.remove(bomb, true, true)
+                bombs.remove(obstacle, true, true)
+                fire.destroy() 
             }
         })
     }
