@@ -372,7 +372,7 @@ class Scene1 extends Phaser.Scene {
                 doorPosition = this.getPosition([maxX, minY], [maxX, maxY], 0)
                 doorSize = [20, 60]
                 sprite.setAngle(90)
-                spritePosition = [doorPosition[0] - 60, doorPosition[1]]
+                spritePosition = [doorPosition[0] + 50, doorPosition[1]]
                 break
         }
 
