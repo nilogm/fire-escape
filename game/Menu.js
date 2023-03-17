@@ -4,12 +4,12 @@ class Menu extends Phaser.Scene{
     }
     
     preload(){
-        
+        this.load.image('main','./assets/mainscreen.png')
     }
 
     create(){
         
-        var background = this.add.image(400, 400,'')
+        var background = this.add.image(400, 400,'main')
         background.x = background.displayWidth/2
         background.y = background.displayHeight/2
 
@@ -60,9 +60,7 @@ class Menu extends Phaser.Scene{
     }
 
     showInfo(){
-        //ADICIONAR
-
-        var text = 'COMO JOGAR FIRE ESCAPE:' 
+        this.scene.start("HowtoPlay")
     }
 }
 
