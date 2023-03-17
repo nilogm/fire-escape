@@ -8,21 +8,28 @@ class Menu extends Phaser.Scene{
     }
 
     create(){
-        this.startButton = this.add.text(400, 300, "START GAME")
+        
+        var background = this.add.image(400, 400,'')
+        background.x = background.displayWidth/2
+        background.y = background.displayHeight/2
+
+        this.startButton = this.add.text(400, 300, "COMEÇAR")
                             .setOrigin(0.5)
                             .setPadding(10)
                             .setStyle({ backgroundColor: '#112' })
                             .setInteractive({hitArea:[20,20], useHandCursor: true })
                             .on('pointerdown', () => this.startGame())
-                            // .on('pointerover', () => button.setStyle({ fill: '#f39c12' }))
-                            // .on('pointerout', () => button.setStyle({ fill: '#FFF' }));
+                            .on('pointerover', () => this.startButton.setStyle({ fill: '#f39c12' }))
+                            .on('pointerout', () => this.startButton.setStyle({ fill: '#FFF' }));
 
-        this.infoButton = this.add.text(400, 450, "How to Play")
+        this.infoButton = this.add.text(400, 450, "Como Jogar")
                             .setOrigin(0.5)
                             .setPadding(10)
                             .setStyle({ backgroundColor: '#111' })
                             .setInteractive({hitArea:[20,20], useHandCursor: true })
-                            .on('pointerdown', () => this.showInfo());
+                            .on('pointerdown', () => this.showInfo())
+                            .on('pointerover', () => this.infoButton.setStyle({ fill: '#f39c12' }))
+                            .on('pointerout', () => this.infoButton.setStyle({ fill: '#FFF' }));
     }
 
     update(){
@@ -45,12 +52,17 @@ class Menu extends Phaser.Scene{
         bombs;
         bombFrequency = 500
         bombOnContact = false
+        if(lastScore > highScore) 
+            highScore = lastScore;
+        lastScore = 0
         this.scene.start("Scene1")
         console.log("GAME START")
     }
 
     showInfo(){
         //ADICIONAR
+
+        var text = 'COMO JOGAR FIRE ESCAPE:' 
     }
 }
 

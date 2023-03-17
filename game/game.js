@@ -44,3 +44,6 @@ var item = "fire"
 
 var aimRadius = 40
 var aimVelocity = Math.PI/10
+
+var highScore = 0
+var lastScore = 0
