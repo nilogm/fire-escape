@@ -55,6 +55,9 @@ class Scene1 extends Phaser.Scene {
         this.load.audio('usemedkit', 'assets/sound/usemedkit.wav')
         this.load.audio('firextinguisher', 'assets/sound/fireextinguisher.mp3')
 
+        this.load.audio('getitem', 'assets/sound/getitem.wav')
+
+
         this.load.audio('gameover', 'assets/sound/gameover.wav')
 
     }
@@ -194,7 +197,7 @@ class Scene1 extends Phaser.Scene {
     }
 
     update(delta){
-        if (gameOver){ return }
+        if (gameOver){ return; }
 
         this.timer.update(delta)
 
@@ -240,6 +243,7 @@ class Scene1 extends Phaser.Scene {
             item_name = "axe"
                        
         this.itemObject = new Interactable(this, 'items', this.player, ()=>{
+            this.sound.add('getitem').play()
             if (object_key == 0)
                 this.audio_usingitem = this.sound.add('firextinguisher')
             else if (object_key == 1)
