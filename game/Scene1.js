@@ -101,7 +101,8 @@ class Scene1 extends Phaser.Scene {
         // Bombs
         bombs = this.physics.add.group()
         this.physics.add.collider(this.player, bombs, null, null, this)
-        new ObstacleGenerator(this).setGenerator([0, 0, 800, 600], bombFrequency)
+        var obstacle_generator = new ObstacleGenerator(this)
+        obstacle_generator.setGenerator([0, 0, 800, 600], bombFrequency)
 
         // Exit Door
         var doorPosition = this.createDoor()
@@ -119,7 +120,17 @@ class Scene1 extends Phaser.Scene {
         this.createItem(Phaser.Math.Between(0, 2), this.getPosition([0,0], [800,600], 40))
 
         // Environment
-        var water_tank = this.physics.add.sprite(100, 100, 'ambient').setScale(2)
+        // var water_tank = this.physics.add.sprite(300, 300, 'ambient').setScale(3).setFrame(0).setCollideWorldBounds(true)
+        // water_tank.setCircle(8, 8, 42).setImmovable(true)
+        // var water_tank = this.physics.add.sprite(300, 300, 'ambient').setScale(3).setFrame(1).setCollideWorldBounds(true)
+        // water_tank.setCircle(12, 4, 38).setImmovable(true)
+        // var water_tank = this.physics.add.sprite(300, 300, 'ambient').setScale(2).setFrame(2).setCollideWorldBounds(true).setImmovable(true)
+        // water_tank.setBodySize(22, 60)
+        // var water_tank = this.physics.add.sprite(300, 300, 'ambient').setScale(3).setFrame(3).setCollideWorldBounds(true)
+        // water_tank.setCircle(13, 3, 36).setImmovable(true)
+        // var water_tank = this.physics.add.sprite(300, 300, 'ambient').setScale(3).setFrame(4).setCollideWorldBounds(true)
+        // water_tank.setCircle(8, 8, 42).setImmovable(true)
+        // this.physics.add.collider(water_tank, this.player);
 
         // Timer
         this.timer = new Timer(this)
@@ -226,7 +237,7 @@ class Scene1 extends Phaser.Scene {
             item = item_name
         })
         this.itemObject.obj.setFrame(object_key)
-        this.itemObject.setObject(pos, 1)
+        this.itemObject.setObject(pos, 2)
         this.itemObject.setGenerator(itemRange)
     }
 

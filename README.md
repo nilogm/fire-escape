@@ -38,3 +38,19 @@
 - [x] Machado para abrir a porta sem chave
 - [x] MedKit para não tomar hitkill
 - [x] Extintor de incêndio (apagar obstáculos)
+
+### Last day
+
+- Cenário
+- Porta + chave
+- Hud que mostra o item atual
+- Obstáculos pegando fogo
+- Nível com um certo número de estáticos:
+  - Aumenta de acordo com a dificuldade
+  - Aparece somente no centro do nível
+  - Ajustar colisões num lugar específico
+- Colisão com obstáculos:
+  - Conferir se há overlap entre obstáculo e player quando cair (não a todo momento como implementado)
+- Animação de obstáculo pegando fogo e sumindo
+- Mostrar maior score e score atual no HUD
+- Player
