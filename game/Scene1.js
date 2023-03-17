@@ -115,8 +115,10 @@ class Scene1 extends Phaser.Scene {
         })
 
         // Random Object
+        this.itemHUD;
+        this.showItemHUD()
         this.emitter = EventDispatcher.getInstance();
-        this.emitter.on('use item', () =>{item = 'none'})
+        this.emitter.on('use item', () =>{item = 'none';this.itemHUD.destroy()})
         this.createItem(Phaser.Math.Between(0, 2), this.getPosition([0,0], [800,600], 40))
 
         // Environment
@@ -235,6 +237,7 @@ class Scene1 extends Phaser.Scene {
                     
         this.itemObject = new Interactable(this, 'items', this.player, ()=>{
             item = item_name
+            this.showItemHUD()
         })
         this.itemObject.obj.setFrame(object_key)
         this.itemObject.setObject(pos, 2)
@@ -484,6 +487,28 @@ class Scene1 extends Phaser.Scene {
         }
         else{
             this.updateHealth(2 * -movementPenalty * maxHealth)
+        }
+    }
+
+    showItemHUD(){
+        if(item == 'none') return;
+        else{
+            if(this.itemHUD) this.itemHUD.destroy()
+            switch (item) {
+                case 'medkit':
+                    this.itemHUD = this.add.image(this.game.scale.width/2 +60,500,'medkit').setScale(0.5).setDepth(3).setScrollFactor(0)
+                    break;
+
+                case 'axe':
+                    this.itemHUD = this.add.image(this.game.scale.width/2 +60,500,'axe').setScale(0.5).setDepth(3).setScrollFactor(0)
+                    break;
+
+                case 'fire':
+                    this.itemHUD = this.add.image(this.game.scale.width/2 +60, 500,'fire').setScale(0.5).setDepth(3).setScrollFactor(0)
+                    break;
+                default:
+                    break;
+            }
         }
     }
 }
