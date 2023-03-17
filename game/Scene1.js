@@ -347,7 +347,7 @@ class Scene1 extends Phaser.Scene {
 
     createDoor(minX, minY, maxX, maxY){
         var doorPosition, doorSize, spritePosition
-        var side = Phaser.Math.Between(1, 1)
+        var side = Phaser.Math.Between(3, 3)
         var sprite = this.add.sprite(0, 0, 'door').setScale(3)
 
         switch (side) {
@@ -359,7 +359,8 @@ class Scene1 extends Phaser.Scene {
             case 1:
                 doorPosition = this.getPosition([minX, minY], [minX, maxY], 0)
                 doorSize = [20, 60]
-                spritePosition = [doorPosition[0], doorPosition[1]]
+                sprite.setAngle(270).setFlipX(true)
+                spritePosition = [doorPosition[0] - 50, doorPosition[1]]
                 break
             case 2:
                 doorPosition = this.getPosition([minX, maxY], [maxX, maxY], 0)
@@ -370,7 +371,8 @@ class Scene1 extends Phaser.Scene {
             case 3:
                 doorPosition = this.getPosition([maxX, minY], [maxX, maxY], 0)
                 doorSize = [20, 60]
-                spritePosition = [doorPosition[0], doorPosition[1] - 20]
+                sprite.setAngle(90)
+                spritePosition = [doorPosition[0] - 60, doorPosition[1]]
                 break
         }
 
