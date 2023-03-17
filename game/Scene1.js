@@ -111,14 +111,14 @@ class Scene1 extends Phaser.Scene {
 
         // Exit Door
         var doorPosition = this.createDoor()
-
+        
         // Key
         this.setKey(doorPosition)
         this.physics.add.overlap(this.exitDoor, this.key.obj, ()=>{
             var keyPosition = this.getPosition([0,0], [width,height], 40)
             this.key.obj.setPosition(keyPosition[0], keyPosition[1])
         })
-
+        
         // Random Object
         this.audio_usingitem = this.sound.add('firextinguisher');
         this.itemHUD;
@@ -171,7 +171,7 @@ class Scene1 extends Phaser.Scene {
     }
 
     update(delta){
-        if (gameOver){ return }
+        if (gameOver){ return; }
 
         this.timer.update(delta)
 
@@ -205,7 +205,7 @@ class Scene1 extends Phaser.Scene {
         if (object_key == 0)
             item_name = "fire"
         else if (object_key == 1)
-            item_name = "medkit"
+            item_name = "medkit"      
         else if (object_key == 2)
             item_name = "axe"
 
@@ -387,5 +387,30 @@ class Scene1 extends Phaser.Scene {
             }
         }
     }
-    
+
+    showItemHUD(){
+        if(item == 'none') return;
+        else{
+            if(this.itemHUD) this.itemHUD.destroy()
+            if(this.audio_usingitem) this.audio_usingitem.destroy()
+            switch (item) {
+                case 'medkit':
+                    this.audio_usingitem = this.sound.add('usemedkit')
+                    this.itemHUD = this.add.image(this.game.scale.width/2 +60,500,'medkit').setScale(0.5).setDepth(3).setScrollFactor(0)
+                    break;
+
+                case 'axe':
+                    this.audio_usingitem = this.sound.add('door_break')
+                    this.itemHUD = this.add.image(this.game.scale.width/2 +60,500,'axe').setScale(0.5).setDepth(3).setScrollFactor(0)
+                    break;
+
+                case 'fire':
+                    this.audio_usingitem = this.sound.add('firextinguisher')
+                    this.itemHUD = this.add.image(this.game.scale.width/2 +60, 500,'fire').setScale(0.5).setDepth(3).setScrollFactor(0)
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
 }
