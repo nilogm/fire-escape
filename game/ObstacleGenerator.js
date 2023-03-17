@@ -31,7 +31,7 @@ class ObstacleGenerator{
     generate(){
         var x = Phaser.Math.Between(this.minX, this.maxX);
         var y = Phaser.Math.Between(this.minY, this.maxY);
-        var caution = this.scene.add.image(x, y,'shadow').setScale(0.1);
+        var caution = this.scene.add.image(x, y,'shadow').setScale(2);
 
         var sprite = Phaser.Math.Between(0, 2)
         var info = [0, 0, 0, 0]

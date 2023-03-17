@@ -41,6 +41,4 @@
 
 ### Last day
 
-- Porta + chave
 - Mostrar maior score e score atual no HUD
-- Sombra
