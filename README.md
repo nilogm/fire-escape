@@ -42,4 +42,3 @@
 ### Last day
 
 - Mostrar maior score e score atual no HUD
-- Sombra
