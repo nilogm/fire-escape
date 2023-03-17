@@ -22,9 +22,11 @@ class Scene1 extends Phaser.Scene {
         this.load.spritesheet('small_flame', 'assets/small_flame.png', {frameWidth: 32, frameHeight: 32})
         this.load.spritesheet('medium_flame', 'assets/medium_flame.png', {frameWidth: 32, frameHeight: 32})
         this.load.spritesheet('big_flame', 'assets/big_flame.png', {frameWidth: 32, frameHeight: 32})
+        this.load.spritesheet('map_decor', 'assets/map_decor.png', {frameWidth: 32, frameHeight: 32})
         this.load.spritesheet('fire1', 'assets/fire1.png', {frameWidth: 32, frameHeight: 32})
         this.load.spritesheet('fire2', 'assets/fire2.png', {frameWidth: 32, frameHeight: 32})
         this.load.spritesheet('fire3', 'assets/fire3.png', {frameWidth: 32, frameHeight: 32})
+        this.load.spritesheet('thermo', 'assets/thermo.png', {frameWidth: 32, frameHeight: 32})
         this.load.image('tiles', 'assets/tilemap.png', {frameWidth: 32, frameHeight: 32})
 
         //SOUND ASSETS
@@ -60,6 +62,7 @@ class Scene1 extends Phaser.Scene {
     }
 
     create(){
+        this.resetStats()
         this.time.paused = false
 
         // Difficulty control
@@ -70,6 +73,7 @@ class Scene1 extends Phaser.Scene {
         keyRange[1] = timerDuration * 0.8
         bombFrequency -= (100 * difficultyIncrease * level)
         maxHealth -= (50 * difficultyIncrease * level)
+        fogScaling -= difficultyIncrease * level
 
         var width = 1920
         var height = 1080
@@ -79,9 +83,6 @@ class Scene1 extends Phaser.Scene {
 
         var worldOffset = 128
         this.physics.world.setBounds(worldOffset, worldOffset, width - 2 * worldOffset, height - 2 * worldOffset)
-
-        // Stats
-        hasKey = false
 
         // SFX --------------------
         // Trying to open door
@@ -96,6 +97,9 @@ class Scene1 extends Phaser.Scene {
         // Tile Generator
         var tileGenerator = new TileGenerator(this, this.player)
         tileGenerator.setFireAnimations(this.anims)
+        environmentObjects = this.physics.add.group()
+        this.map.generateEnvironment(environmentObjects, this.player, tileGenerator, 30, [worldOffset, worldOffset], [width - 2 * worldOffset, height - 2 * worldOffset])
+        this.map.generateDecorations(tileGenerator, 30, [worldOffset, worldOffset], [width - worldOffset, height - worldOffset])
         
         // Cameras
         this.cameras.main.setBounds(0, 0, width, height, true)
@@ -105,12 +109,15 @@ class Scene1 extends Phaser.Scene {
         
         // Bombs
         bombs = this.physics.add.group()
-        this.physics.add.collider(this.player.obj, bombs, null, null, this)
+        this.physics.add.overlap(this.player.obj, bombs, ()=>{
+            this.audio_gameover.play()
+            this.hitBomb()
+        }, null, this)
         var obstacle_generator = new ObstacleGenerator(this, tileGenerator)
         obstacle_generator.setGenerator([worldOffset, worldOffset, width - 2 * worldOffset, height - 2 * worldOffset], bombFrequency)
 
         // Exit Door
-        var doorPosition = this.createDoor()
+        var doorPosition = this.createDoor(worldOffset, worldOffset, width - worldOffset, height - worldOffset)
 
         // Key
         this.setKey(doorPosition)
@@ -131,10 +138,6 @@ class Scene1 extends Phaser.Scene {
         })
         this.createItem(Phaser.Math.Between(0, 2), this.getPosition([0,0], [width,height], 40))
 
-        // Environment
-        tileGenerator.setEnvironment('water', 200, 200)
-        tileGenerator.setEnvironment('chair', 400, 200)
-
         // Timer
         this.timer = new Timer(this)
         this.timer.setTimer(()=>{this.endGame()}, timerDuration)
@@ -153,6 +156,9 @@ class Scene1 extends Phaser.Scene {
         this.oxygenMeter = this.add.sprite(100, 100, 'oxygen').setScrollFactor(0).setScale(3).setDepth(3000)
         this.oxygenPointer = this.add.sprite(this.oxygenMeter.x - 2, this.oxygenMeter.y, 'oxygen').setScrollFactor(0).setScale(3).setDepth(3000)
         this.oxygenPointer.setFrame(1).setOrigin(0.48, 0.575).setAngle(-115)
+
+        // Thermometer
+        this.thermometer = this.add.sprite(200, 100, 'thermo').setScrollFactor(0).setScale(3).setDepth(3000).setFrame(0)
 
         // Fade Effect + Zoom
         this.cameras.main.zoomTo(1.2, cameraFXOffset)
@@ -176,6 +182,30 @@ class Scene1 extends Phaser.Scene {
         this.timer.update(delta)
 
         this.oxygenPointer.setAngle((((timerDuration - this.timer.seconds * 1000) / timerDuration) * 230) - 115)
+        if (this.player.health/maxHealth < 0.2){
+            this.thermometer.setFrame(3)
+            if (this.healthTimer == null){
+                this.healthTimer = new Timer(this)
+                this.healthTimer.setTimer(()=>{
+                    this.physics.pause()
+                    this.player.obj.setTint(0xff0000)
+                    this.endGame()
+                    gameOver = true
+                }, 1000)
+            }
+        }
+        else if (this.player.health/maxHealth < 0.4){
+            this.thermometer.setFrame(2)
+        }
+        else if (this.player.health/maxHealth < 0.6){
+            this.thermometer.setFrame(1)
+            if (this.healthTimer != null){
+                this.healthTimer.stop()
+                this.healthTimer = null
+            }
+        }
+        else
+            this.thermometer.setFrame(0)
 
         this.map.updateFogPosition(this.player)
                 
@@ -244,7 +274,7 @@ class Scene1 extends Phaser.Scene {
     }
 
     endGame(){
-        this.gameOverText = this.add.text(0, 0, "GAME OVER!", {font: '40px Arial', fill: '#FF0000', align: 'center'}).setScrollFactor(0).setDepth(3)
+        this.gameOverText = this.add.text(0, 0, "GAME OVER!", {font: '40px Arial', fill: '#FF0000', align: 'center'}).setScrollFactor(0).setDepth(3000)
         this.gameOverText.setPosition(400 - this.gameOverText.getCenter().x, 300 - this.gameOverText.getCenter().y)
         this.gameOverText.setShadow(0, 5, '#000000', 4)
 
@@ -315,33 +345,38 @@ class Scene1 extends Phaser.Scene {
 
     }
 
-    createDoor(){
-        var doorPosition, doorSize
-        var side = Phaser.Math.Between(0, 3)
+    createDoor(minX, minY, maxX, maxY){
+        var doorPosition, doorSize, spritePosition
+        var side = Phaser.Math.Between(1, 1)
+        var sprite = this.add.sprite(0, 0, 'door').setScale(3)
+
         switch (side) {
             case 0:
-                doorPosition = this.getPosition([0,0], [790,0], 0)
+                doorPosition = this.getPosition([minX, minY], [maxX, minY], 0)
                 doorSize = [60, 20]
+                spritePosition = [doorPosition[0], doorPosition[1] - 50]
                 break
             case 1:
-                doorPosition = this.getPosition([0,0], [0,590], 0)
+                doorPosition = this.getPosition([minX, minY], [minX, maxY], 0)
                 doorSize = [20, 60]
+                spritePosition = [doorPosition[0], doorPosition[1]]
                 break
             case 2:
-                doorPosition = this.getPosition([0,600], [800,600], 0)
+                doorPosition = this.getPosition([minX, maxY], [maxX, maxY], 0)
                 doorSize = [60, 20]
+                sprite.setAngle(180).setFlipX(true)
+                spritePosition = [doorPosition[0], doorPosition[1] + 60]
                 break
             case 3:
-                doorPosition = this.getPosition([800,0], [800,600], 0)
+                doorPosition = this.getPosition([maxX, minY], [maxX, maxY], 0)
                 doorSize = [20, 60]
+                spritePosition = [doorPosition[0], doorPosition[1] - 20]
                 break
-        
-            default:
-                doorPosition = this.getPosition([0,0], [800,600], 40)
-                break;
         }
 
-        this.exitDoor = this.add.rectangle(doorPosition[0], doorPosition[1], doorSize[0], doorSize[1], 0x773311).setStrokeStyle(4, 0x333333)
+        sprite.setPosition(spritePosition[0], spritePosition[1])
+
+        this.exitDoor = this.add.rectangle(doorPosition[0], doorPosition[1], doorSize[0], doorSize[1])
         this.physics.add.existing(this.exitDoor)
         this.physics.add.collider(this.player.obj, this.exitDoor, ()=>{this.exitLevel()}, null, this)
         this.exitDoor.body.setCollideWorldBounds(true).setImmovable(true)
@@ -367,25 +402,42 @@ class Scene1 extends Phaser.Scene {
         else{
             if(this.itemHUD) this.itemHUD.destroy()
             if(this.audio_usingitem) this.audio_usingitem.destroy()
+            this.itemHUD = this.add.image(100, 180, 'items').setFrame(1).setScale(3).setDepth(3000).setScrollFactor(0)
             switch (item) {
                 case 'medkit':
                     this.audio_usingitem = this.sound.add('usemedkit')
-                    this.itemHUD = this.add.image(this.game.scale.width/2 + 60, 500,'medkit').setScale(0.5).setDepth(3).setScrollFactor(0)
+                    this.itemHUD.setFrame(1)
                     break;
 
                 case 'axe':
                     this.audio_usingitem = this.sound.add('door_break')
-                    this.itemHUD = this.add.image(this.game.scale.width/2 + 60, 500,'axe').setScale(0.5).setDepth(3).setScrollFactor(0)
+                    this.itemHUD.setFrame(2)
                     break;
 
                 case 'fire':
                     this.audio_usingitem = this.sound.add('firextinguisher')
-                    this.itemHUD = this.add.image(this.game.scale.width/2 + 60, 500,'fire').setScale(0.5).setDepth(3).setScrollFactor(0)
+                    this.itemHUD.setFrame(0)
                     break;
                 default:
                     break;
             }
         }
+    }
+
+    resetStats(){
+        gameOver = false
+        level = 0
+        hasKey = false
+        timerDuration = 60000
+        keyRange = [timerDuration * 0.1, timerDuration * 0.75]
+        itemRange = [timerDuration * 0.2, timerDuration * 0.5]
+        cameraFXOffset = timerDuration/2
+        fogScaling = 3
+        velocity = 400
+        maxHealth = 400
+        bombFrequency = 500
+        bombOnContact = false
+        item = "fire"
     }
     
 }

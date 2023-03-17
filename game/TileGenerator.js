@@ -1,7 +1,6 @@
 class TileGenerator{
-    constructor(scene, player){
+    constructor(scene){
         this.scene = scene
-        this.player = player
     }
 
     setFire(x, y, scale=2){
@@ -45,35 +44,39 @@ class TileGenerator{
         })
     }
 
-    setEnvironment(name, x=0, y=0){
+    setEnvironment(group, name, x=0, y=0){
         var obj
         if (name == 'water'){
-            obj = this.scene.physics.add.sprite(x, y, 'ambient').setScale(3).setFrame(0).setCollideWorldBounds(true)
+            obj = group.create(x, y, 'ambient').setScale(3).setFrame(0).setCollideWorldBounds(true)
             obj.setCircle(8, 8, 42).setImmovable(true)
         }
 
         else if (name == 'table'){
-            obj = this.scene.physics.add.sprite(x, y, 'ambient').setScale(3).setFrame(1).setCollideWorldBounds(true)
-            obj.setCircle(12, 4, 38).setImmovable(true)
+            obj = group.create(x, y, 'ambient').setScale(3).setFrame(1).setCollideWorldBounds(true)
+            obj.setCircle(12, 4, 38)
         }
 
         else if (name == 'large_table'){
-            obj = this.scene.physics.add.sprite(x, y, 'ambient').setScale(2).setFrame(2).setCollideWorldBounds(true)
-            obj.setBodySize(22, 60).setImmovable(true)
+            obj = group.create(x, y, 'ambient').setScale(2).setFrame(2).setCollideWorldBounds(true)
+            obj.setBodySize(22, 60)
         }
 
         else if (name == 'drawer'){
-            obj = this.scene.physics.add.sprite(x, y, 'ambient').setScale(3).setFrame(3).setCollideWorldBounds(true)
+            obj = group.create(x, y, 'ambient').setScale(3).setFrame(3).setCollideWorldBounds(true)
             obj.setCircle(13, 3, 36).setImmovable(true)
         }
 
         else if (name == 'chair'){
-            obj = this.scene.physics.add.sprite(x, y, 'ambient').setScale(3).setFrame(4).setCollideWorldBounds(true)
-            obj.setCircle(8, 8, 42).setImmovable(true)
+            obj = group.create(x, y, 'ambient').setScale(3).setFrame(4).setCollideWorldBounds(true)
+            obj.setCircle(8, 8, 42)
         }
         
-        this.scene.physics.add.collider(obj, this.player.obj);
         obj.setDepth(y)
         return obj
+    }
+
+    setDecorations(x, y){
+        var type = Phaser.Math.Between(0, 3)
+        this.scene.physics.add.sprite(x, y, 'map_decor').setScale(2).setDepth(y).setFrame(type)
     }
 }

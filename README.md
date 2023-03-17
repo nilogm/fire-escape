@@ -41,14 +41,6 @@
 
 ### Last day
 
-- Cenário
 - Porta + chave
-- Hud que mostra o item atual
-- Nível com um certo número de estáticos:
-  - Aumenta de acordo com a dificuldade
-  - Aparece somente no centro do nível
-  - Ajustar colisões num lugar específico
-- Colisão com obstáculos:
-  - Conferir se há overlap entre obstáculo e player quando cair (não a todo momento como implementado)
 - Mostrar maior score e score atual no HUD
 - Sombra

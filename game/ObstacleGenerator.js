@@ -83,11 +83,6 @@ class ObstacleGenerator{
         if (flip == 1)
             obstacle.setFlipX(true)
 
-        this.scene.physics.add.overlap(this.scene.player.obj, obstacle, ()=>{
-            this.scene.audio_gameover.play()
-            this.scene.hitBomb()
-        });
-
         this.scene.time.addEvent({
             delay: 3000,
             callback: () => {

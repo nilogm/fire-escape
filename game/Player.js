@@ -87,11 +87,11 @@ class Player{
 
     movement(cursors){
         if (this.obj.body.velocity.equals(Phaser.Math.Vector2.ZERO)){
-            this.updateHealth(2 * -movementPenalty * maxHealth)
+            this.updateHealth(-movementPenalty * maxHealth)
         }
         else {
             this.obj.play("player_anim", true)
-            this.updateHealth(movementPenalty * maxHealth)
+            this.updateHealth(movementPenalty * maxHealth / 2)
             if(!this.audio_footstep.isPlaying){
                 var aud = Phaser.Math.Between(0, 9)
                 var aud_name = 'footstep0' + aud

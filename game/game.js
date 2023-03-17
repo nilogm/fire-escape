@@ -10,7 +10,7 @@ var config = {
     physics: {
         default:'arcade',
         arcade: {
-            debug : false
+            debug : true
         }
     },
  
@@ -24,15 +24,19 @@ var level = 0
 
 var hasKey = false
 
-var timerDuration = 20000
+var timerDuration = 60000
 var keyRange = [timerDuration * 0.1, timerDuration * 0.75]
 var itemRange = [timerDuration * 0.2, timerDuration * 0.5]
 var cameraFXOffset = timerDuration/2
 
 var difficultyIncrease = 0.05
 
+var fogScaling = 3
+
+var environmentObjects
+
 var velocity = 400
-var maxHealth = 100
+var maxHealth = 200
 var movementPenalty = 0.025
 
 var bombs;
