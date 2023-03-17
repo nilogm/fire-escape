@@ -1,5 +1,5 @@
 class Player{
-    constructor(scene, xLimit, yLimit, maxHealth, audio_footstep){
+    constructor(scene, x, y, xLimit, yLimit, maxHealth, audio_footstep){
         this.xLimit = xLimit
         this.yLimit = yLimit
 
@@ -7,8 +7,8 @@ class Player{
 
         this.audio_footstep = audio_footstep
 
-        this.obj = scene.physics.add.sprite(100, 100, 'player').setScale(3).setCollideWorldBounds(true)
-        this.playerFire = scene.physics.add.sprite(100, 100, 'big_flame').setScale(3)
+        this.obj = scene.physics.add.sprite(x, y, 'player').setScale(3).setCollideWorldBounds(true)
+        this.playerFire = scene.physics.add.sprite(x, y, 'big_flame').setScale(3)
         this.obj.setCircle(6, 9, 15)
         this.playerCenter = new Phaser.Geom.Point()
 

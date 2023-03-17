@@ -92,7 +92,8 @@ class Scene1 extends Phaser.Scene {
         
         // Player
         var footsteps = this.sound.add('footstep00')
-        this.player = new Player(this, width, height, maxHealth, footsteps)
+        var playerPosition = this.getPosition([worldOffset, worldOffset], [width - 2 * worldOffset, height - 2 * worldOffset])
+        this.player = new Player(this, playerPosition[0], playerPosition[1], width, height, maxHealth, footsteps)
 
         // Tile Generator
         var tileGenerator = new TileGenerator(this, this.player)

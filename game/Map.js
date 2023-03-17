@@ -77,6 +77,12 @@ class Map{
                 obj2.setPosition(pos[0], pos[1])
             }
         })
+        this.scene.physics.add.overlap(player, group, (obj1, obj2)=>{
+            if (this.createdEnvironment == false){
+                var pos = this.getPosition(min, max, 64)
+                obj2.setPosition(pos[0], pos[1])
+            }
+        })
 
         var items = ['water', 'table', 'large_table', 'drawer', 'chair']
         for (let a = 0; a < amount; a++) {

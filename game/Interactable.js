@@ -22,7 +22,7 @@ class Interactable{
     }
 
     showItem(){
-        var caution = this.scene.add.image(this.position[0], this.position[1], 'shadow').setScale(0.07)
+        var caution = this.scene.add.image(this.position[0], this.position[1], 'shadow').setScale(2)
         
         var event = new Timer(this.scene)
         event.setTimer(()=>{
