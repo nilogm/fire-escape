@@ -24,7 +24,7 @@ class Scene1 extends Phaser.Scene {
 
         this.load.spritesheet('cloud', 'assets/cloud.png', {frameWidth: 32, frameHeight: 32})
         this.load.spritesheet('items', 'assets/items.png', {frameWidth: 32, frameHeight: 32})
-        this.load.spritesheet('oxygen', 'assets/oxygen.png', {frameWidth: 32, frameHeight: 32})
+        this.load.spritesheet('oxygen', 'assets/oxygen2.png', {frameWidth: 64, frameHeight: 64})
         this.load.image('fog', 'assets/fog.png')
 
 
@@ -139,9 +139,9 @@ class Scene1 extends Phaser.Scene {
 
         // UI ---------------------
         // Oxygen Meter
-        this.oxygenMeter = this.add.sprite(width/2, 500, 'oxygen').setScrollFactor(0).setScale(3).setDepth(3)
-        this.oxygenPointer = this.add.sprite(this.oxygenMeter.x - 2, this.oxygenMeter.y, 'oxygen').setScrollFactor(0).setScale(3).setDepth(3)
-        this.oxygenPointer.setFrame(1).setOrigin(0.48, 0.575).setAngle(-115)
+        this.oxygenMeter = this.add.sprite(width/2, 500, 'oxygen').setScrollFactor(0).setScale(2).setDepth(3)
+        this.oxygenPointer = this.add.sprite(this.oxygenMeter.x - 2, this.oxygenMeter.y, 'oxygen').setScrollFactor(0).setScale(2).setDepth(3)
+        this.oxygenPointer.setFrame(1).setOrigin(0.48, 0.575).setAngle(-125)
 
         // FX ---------------------
         // Fog 
@@ -176,7 +176,7 @@ class Scene1 extends Phaser.Scene {
 
         this.timer.update(delta)
 
-        this.oxygenPointer.setAngle((((timerDuration - this.timer.seconds * 1000) / timerDuration) * 230) - 115)
+        this.oxygenPointer.setAngle((((timerDuration - this.timer.seconds * 1000) / timerDuration) * 250) - 125)
 
         if (this.vision)
         {
