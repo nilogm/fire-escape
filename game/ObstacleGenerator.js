@@ -14,7 +14,7 @@ class ObstacleGenerator{
 		this.scene = scene
 	}
 
-    setGenerator(info=[0,0,0,0], frequency=1000, sprites=['','','','']){
+    setGenerator(info=[0,0,0,0], frequency=1000){
         this.minX = info[0]
         this.minY = info[1]
         this.maxX = info[2]
@@ -22,26 +22,46 @@ class ObstacleGenerator{
 
         this.timerEvent = new Timer(this.scene)
         this.timerEvent.setTimer(()=>{
-            this.generate(sprites[Phaser.Math.Between(0,sprites.length-1)])
+            this.generate()
         }, frequency, true)
     }
 
-    generate(sprite){
+    generate(){
         var x = Phaser.Math.Between(this.minX, this.maxX);
         var y = Phaser.Math.Between(this.minY, this.maxY);
         var caution = this.scene.add.image(x, y,'shadow').setScale(0.1);
 
+        var sprite = Phaser.Math.Between(0, 2)
+        var frame = 0
+
+        var obstacle_falling = this.scene.physics.add.sprite(x, 0, 'obstacles').setScale(2)
+        if (sprite == 0){
+            obstacle_falling.setFrame(0)
+            frame = 0
+        }
+        else if (sprite == 1){
+            obstacle_falling.setFrame(1)
+            frame = 2
+        }
+        else if (sprite == 2){
+            obstacle_falling.setFrame(3)
+            frame = 3
+        }
+
+        obstacle_falling.setVelocity(0, y)
+
         var event = new Timer(this.scene)
         event.setTimer(()=>{
+            obstacle_falling.destroy()
             caution.destroy()
-            this.createObstacle(x, y,sprite)
+            this.createObstacle(x, y, frame)
             this.scene.events.emit('shake')
             this.scene.sound.add('obstacle').setDetune(Phaser.Math.Between(-1200,1200)).play()
         }, 1000)
     }
 
-    createObstacle(x, y, sprite){
-        var obstacle = bombs.create(x, y, sprite).setImmovable(true).refreshBody()
+    createObstacle(x, y, frame){
+        var obstacle = bombs.create(x, y, 'obstacles').setImmovable(true).setScale(2).refreshBody().setFrame(frame)
         obstacle.setCollideWorldBounds(true)
 
         this.scene.physics.add.overlap(this.scene.player, obstacle, ()=>{

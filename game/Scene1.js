@@ -82,7 +82,7 @@ class Scene1 extends Phaser.Scene {
             height
         }, true)
         rt.draw('ground')
-        rt.setTint(0x111111).setDepth(2)
+        // rt.setTint(0x111111).setDepth(2)
 
         // Stats
         hasKey = false
@@ -101,7 +101,7 @@ class Scene1 extends Phaser.Scene {
         // Bombs
         bombs = this.physics.add.group()
         this.physics.add.collider(this.player, bombs, null, null, this)
-        new ObstacleGenerator(this).setGenerator([0, 0, 800, 600], bombFrequency,['obstacle1','obstacle2','obstacle3','obstacle4'])
+        new ObstacleGenerator(this).setGenerator([0, 0, 800, 600], bombFrequency)
 
         // Exit Door
         var doorPosition = this.createDoor()
@@ -117,6 +117,9 @@ class Scene1 extends Phaser.Scene {
         this.emitter = EventDispatcher.getInstance();
         this.emitter.on('use item', () =>{item = 'none'})
         this.createItem(Phaser.Math.Between(0, 2), this.getPosition([0,0], [800,600], 40))
+
+        // Environment
+        var water_tank = this.physics.add.sprite(100, 100, 'ambient').setScale(2)
 
         // Timer
         this.timer = new Timer(this)
@@ -219,10 +222,10 @@ class Scene1 extends Phaser.Scene {
         else if (object_key == 2)
             item_name = "axe"
                     
-        this.itemObject = new Interactable(this, item_name, this.player, ()=>{
+        this.itemObject = new Interactable(this, 'items', this.player, ()=>{
             item = item_name
         })
-        // this.itemObject.obj.setFrame(object_key)
+        this.itemObject.obj.setFrame(object_key)
         this.itemObject.setObject(pos, 1)
         this.itemObject.setGenerator(itemRange)
     }
