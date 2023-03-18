@@ -45,29 +45,31 @@ class TileGenerator{
     }
 
     setEnvironment(group, name, x=0, y=0){
-        var obj
+        var obj = group.create(x, y, 'ambient').setScale(3).setCollideWorldBounds(true).refreshBody()   
         if (name == 'water'){
-            obj = group.create(x, y, 'ambient').setScale(3).setFrame(0).setCollideWorldBounds(true)
+            obj.setFrame(0)
             obj.setCircle(8, 8, 42).setImmovable(true)
         }
 
         else if (name == 'table'){
-            obj = group.create(x, y, 'ambient').setScale(3).setFrame(1).setCollideWorldBounds(true)
+            obj.setFrame(1)
             obj.setCircle(12, 4, 38)
         }
 
         else if (name == 'large_table'){
-            obj = group.create(x, y, 'ambient').setScale(2).setFrame(2).setCollideWorldBounds(true)
-            obj.setBodySize(22, 60)
+            // obj.setFrame(2)
+            // obj.setBodySize(22, 60)
+            obj.setFrame(1)
+            obj.setCircle(12, 4, 38)
         }
 
         else if (name == 'drawer'){
-            obj = group.create(x, y, 'ambient').setScale(3).setFrame(3).setCollideWorldBounds(true)
+            obj.setFrame(3)
             obj.setCircle(13, 3, 36).setImmovable(true)
         }
 
         else if (name == 'chair'){
-            obj = group.create(x, y, 'ambient').setScale(3).setFrame(4).setCollideWorldBounds(true)
+            obj.setFrame(4)
             obj.setCircle(8, 8, 42)
         }
         
@@ -77,6 +79,6 @@ class TileGenerator{
 
     setDecorations(x, y){
         var type = Phaser.Math.Between(0, 3)
-        this.scene.physics.add.sprite(x, y, 'map_decor').setScale(2).setDepth(y).setFrame(type)
+        this.scene.physics.add.sprite(x, y, 'map_decor').setScale(2).setDepth(10).setFrame(type)
     }
 }

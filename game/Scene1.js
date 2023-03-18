@@ -192,7 +192,7 @@ class Scene1 extends Phaser.Scene {
                     this.player.obj.setTint(0xff0000)
                     this.endGame()
                     gameOver = true
-                }, 1000)
+                }, 2000)
             }
         }
         else if (this.player.health/maxHealth < 0.4){
@@ -264,6 +264,8 @@ class Scene1 extends Phaser.Scene {
         else {
             this.physics.pause()
             this.player.obj.setTint(0xff0000)
+            this.player.playerFire.play("big_fire_anim", true)
+            this.player.playerFire.setDepth(this.player.obj.y + 1)
             this.endGame()
             gameOver = true
         }
