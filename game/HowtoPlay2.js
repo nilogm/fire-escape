@@ -1,15 +1,15 @@
-class HowtoPlay extends Phaser.Scene{
+class HowtoPlay2 extends Phaser.Scene{
     constructor(){
-        super({key:"HowtoPlay"});
+        super({key:"HowtoPlay2"});
     }
     
     preload(){
-        this.load.image('howtoplay','./assets/howtoplay.png')
+        this.load.image('howtoplay2','./assets/howtoplay2.png')
     }
 
     create(){
         
-        var background = this.add.image(400, 400,'howtoplay')
+        var background = this.add.image(400, 400,'howtoplay2')
         background.x = background.displayWidth/2
         background.y = background.displayHeight/2
 
@@ -30,7 +30,7 @@ class HowtoPlay extends Phaser.Scene{
     }
 
     showInfo(){
-        this.scene.start("Menu")
+        this.scene.start("HowtoPlay1")
     }
 }
 

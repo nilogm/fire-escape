@@ -98,7 +98,7 @@ class Menu extends Phaser.Scene{
     }
 
     showInfo(){
-        this.scene.start("HowtoPlay")
+        this.scene.start("HowtoPlay1")
     }
 }
 
