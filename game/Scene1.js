@@ -188,10 +188,8 @@ class Scene1 extends Phaser.Scene {
     }
 
     update(delta){
-        if (gameOver){
-            this.firesfx.volume = 1
-            return; 
-        }
+        if (gameOver)
+            return;
 
         this.timer.update(delta)
 
@@ -298,10 +296,12 @@ class Scene1 extends Phaser.Scene {
         this.cameras.main.resetFX()
         this.cameras.main.fade(2000)
 
+        this.firesfx.volume = 1
+
         var endGameTimer = new Timer(this)
         endGameTimer.setTimer(()=>{
-            this.firesfx.stop()
             this.firesfx.volume = 0
+            this.firesfx.stop()
             this.scene.start("Menu")
         }, 2100)
     }
