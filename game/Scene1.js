@@ -6,11 +6,8 @@ class Scene1 extends Phaser.Scene {
 
     preload(){
         // IMAGE AND SPRITES
-        this.load.image('ground', 'assets/ground2.png')
-        this.load.image('circle', 'assets/circle.png')
-        this.load.image('door', 'assets/door.png')
-        
         this.load.image('key', 'assets/key.png')
+        this.load.image('door', 'assets/door.png')
         this.load.image('fog', 'assets/fog.png')
         this.load.image('shadow', 'assets/shadow.png')
         this.load.spritesheet('cloud', 'assets/cloud.png', {frameWidth: 32, frameHeight: 32})
