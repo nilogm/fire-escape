@@ -65,8 +65,8 @@ class Scene1 extends Phaser.Scene {
         this.increaseStats()
         this.time.paused = false        
 
-        var width = 1920
-        var height = 1080
+        var width = 2112
+        var height = 1728
         
         this.map = new Map(this, width, height)
         this.map.setFog()
@@ -139,7 +139,12 @@ class Scene1 extends Phaser.Scene {
 
         // Timer
         this.timer = new Timer(this)
-        this.timer.setTimer(()=>{this.endGame()}, timerDuration)
+        this.timer.setTimer(()=>{
+            this.physics.pause()
+            this.player.obj.setTint(0xff0000)
+            this.endGame()
+            gameOver = true
+        }, timerDuration)
 
         // Animations -------------
         // Extinguisher Cloud
@@ -174,8 +179,8 @@ class Scene1 extends Phaser.Scene {
 
         level = 1
 
-        this.firesfx = this.sound.add('campfire'+Phaser.Math.Between(0,3),{
-                       volume: 0.1,
+        this.firesfx = this.sound.add('campfire' + Phaser.Math.Between(0,3),{
+                       volume: 0.2,
                        loop: true
         })
 
@@ -183,8 +188,8 @@ class Scene1 extends Phaser.Scene {
     }
 
     update(delta){
-        if (gameOver){ 
-            this.firesfx.stop();
+        if (gameOver){
+            this.firesfx.volume = 1
             return; 
         }
 
@@ -294,7 +299,11 @@ class Scene1 extends Phaser.Scene {
         this.cameras.main.fade(2000)
 
         var endGameTimer = new Timer(this)
-        endGameTimer.setTimer(()=>{this.scene.start("Menu")}, 2100)
+        endGameTimer.setTimer(()=>{
+            this.firesfx.stop()
+            this.firesfx.volume = 0
+            this.scene.start("Menu")
+        }, 2100)
     }
 
     resetGame(){
@@ -359,30 +368,30 @@ class Scene1 extends Phaser.Scene {
 
     createDoor(minX, minY, maxX, maxY){
         var doorPosition, doorSize, spritePosition
-        var side = Phaser.Math.Between(3, 3)
+        var side = Phaser.Math.Between(0, 3)
         var sprite = this.add.sprite(0, 0, 'door').setScale(3)
 
         switch (side) {
             case 0:
                 doorPosition = this.getPosition([minX, minY], [maxX, minY], 0)
-                doorSize = [60, 20]
+                doorSize = [60, 5]
                 spritePosition = [doorPosition[0], doorPosition[1] - 50]
                 break
             case 1:
                 doorPosition = this.getPosition([minX, minY], [minX, maxY], 0)
-                doorSize = [20, 60]
+                doorSize = [5, 60]
                 sprite.setAngle(270).setFlipX(true)
                 spritePosition = [doorPosition[0] - 50, doorPosition[1]]
                 break
             case 2:
                 doorPosition = this.getPosition([minX, maxY], [maxX, maxY], 0)
-                doorSize = [60, 20]
+                doorSize = [60, 5]
                 sprite.setAngle(180).setFlipX(true)
-                spritePosition = [doorPosition[0], doorPosition[1] + 60]
+                spritePosition = [doorPosition[0], doorPosition[1] + 50]
                 break
             case 3:
                 doorPosition = this.getPosition([maxX, minY], [maxX, maxY], 0)
-                doorSize = [20, 60]
+                doorSize = [5, 60]
                 sprite.setAngle(90)
                 spritePosition = [doorPosition[0] + 50, doorPosition[1]]
                 break
