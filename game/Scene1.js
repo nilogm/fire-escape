@@ -46,16 +46,18 @@ class Scene1 extends Phaser.Scene {
         this.load.audio('forcingdoor1', 'assets/sound/forcingdoor1.ogg')
         this.load.audio('forcingdoor2', 'assets/sound/forcingdoor2.ogg')
         this.load.audio('forcingdoor3', 'assets/sound/forcingdoor3.ogg')
-        
+        //Itens
         this.load.audio('door_break', 'assets/sound/door_ripped.wav')
         this.load.audio('usemedkit', 'assets/sound/usemedkit.wav')
         this.load.audio('firextinguisher', 'assets/sound/fireextinguisher.mp3')
-
         this.load.audio('getitem', 'assets/sound/getitem.wav')
-
-
+        //Fogo
+        this.load.audio('campfire0','./assets/sound/campfire0.wav')
+        this.load.audio('campfire1','./assets/sound/campfire1.wav')
+        this.load.audio('campfire2','./assets/sound/campfire2.wav')
+        this.load.audio('campfire3','./assets/sound/campfire3.wav')
+        
         this.load.audio('gameover', 'assets/sound/gameover.wav')
-
     }
 
     create(){
@@ -171,10 +173,20 @@ class Scene1 extends Phaser.Scene {
         this.events.on('shake', ()=>{this.cameras.main.shake(100, 0.0025)})
 
         level = 1
+
+        this.firesfx = this.sound.add('campfire'+Phaser.Math.Between(0,3),{
+                       volume: 0.1,
+                       loop: true
+        })
+
+        this.firesfx.play()
     }
 
     update(delta){
-        if (gameOver){ return }
+        if (gameOver){ 
+            this.firesfx.stop();
+            return; 
+        }
 
         this.timer.update(delta)
 

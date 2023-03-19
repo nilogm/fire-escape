@@ -5,9 +5,26 @@ class Menu extends Phaser.Scene{
     
     preload(){
         this.load.image('main','./assets/menuScreen.png')
+        this.load.audio('menu','./assets/sound/menu.mp3')
+        this.load.audio('music','./assets/sound/playing.ogg')
+
     }
 
     create(){
+
+        if(!this.audio_menu){
+            this.audio_menu = this.sound.add('menu').setVolume(0.2)
+        }
+        this.audio_menu.play()
+
+        if(!this.music){
+            this.music = this.sound.add('music',{
+                volume: 0.1,
+                loop: true
+            })
+        }
+        else this.music.stop()
+
         var textColor = "#FFFFFF"
         if(lastScore > highScore) {
             textColor = "#FFFF00"
@@ -75,7 +92,8 @@ class Menu extends Phaser.Scene{
 
         bombs = null
         bombFrequency = 500
-        
+        this.audio_menu.stop()
+        this.music.play()
         this.scene.start("Scene1")
     }
 
