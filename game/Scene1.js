@@ -62,18 +62,9 @@ class Scene1 extends Phaser.Scene {
     }
 
     create(){
-        this.resetStats()
-        this.time.paused = false
-
         // Difficulty control
-        timerDuration -= (1000 * difficultyIncrease * level)
-        keyRange[0] += (1000 * difficultyIncrease * level)
-        if (keyRange[0] > keyRange[1] - 1000)
-        keyRange[0] = keyRange[1] - 1000
-        keyRange[1] = timerDuration * 0.8
-        bombFrequency -= (100 * difficultyIncrease * level)
-        maxHealth -= (50 * difficultyIncrease * level)
-        fogScaling -= difficultyIncrease * level
+        this.increaseStats()
+        this.time.paused = false        
 
         var width = 1920
         var height = 1080
@@ -110,12 +101,12 @@ class Scene1 extends Phaser.Scene {
         
         // Bombs
         bombs = this.physics.add.group()
-        this.physics.add.overlap(this.player.obj, bombs, ()=>{
+        this.physics.add.overlap(this.player.obj, bombs, (player, bomb)=>{
             this.audio_gameover.play()
-            this.hitBomb()
+            this.hitBomb(player, bomb)
         }, null, this)
         var obstacle_generator = new ObstacleGenerator(this, tileGenerator)
-        obstacle_generator.setGenerator([worldOffset, worldOffset, width - 2 * worldOffset, height - 2 * worldOffset], bombFrequency)
+        obstacle_generator.setGenerator([worldOffset, worldOffset, width - worldOffset, height - worldOffset], bombFrequency)
 
         // Exit Door
         var doorPosition = this.createDoor(worldOffset, worldOffset, width - worldOffset, height - worldOffset)
@@ -123,6 +114,14 @@ class Scene1 extends Phaser.Scene {
         // Key
         this.setKey(doorPosition)
         this.physics.add.overlap(this.exitDoor, this.key.obj, ()=>{
+            var keyPosition = this.getPosition([0,0], [width,height], 40)
+            this.key.obj.setPosition(keyPosition[0], keyPosition[1])
+        })
+        this.physics.add.overlap(environmentObjects, this.key.obj, ()=>{
+            var keyPosition = this.getPosition([0,0], [width,height], 40)
+            this.key.obj.setPosition(keyPosition[0], keyPosition[1])
+        })
+        this.physics.add.overlap(this.player.obj, this.key.obj, ()=>{
             var keyPosition = this.getPosition([0,0], [width,height], 40)
             this.key.obj.setPosition(keyPosition[0], keyPosition[1])
         })
@@ -240,8 +239,7 @@ class Scene1 extends Phaser.Scene {
         else if (object_key == 2)
             item_name = "axe"
 
-        this.itemObject = new Interactable(this, 'items', this.player, ()=>{
-            this.sound.add('getitem').play()
+        this.itemObject = new Interactable(this, 'items', this.player.obj, ()=>{
             if (object_key == 0)
                 this.audio_usingitem = this.sound.add('firextinguisher')
             else if (object_key == 1)
@@ -251,16 +249,18 @@ class Scene1 extends Phaser.Scene {
 
             item = item_name
             this.showItemHUD()
-        })
+        }, "chave_caindo", "getitem")
         this.itemObject.obj.setFrame(object_key)
         this.itemObject.setObject(pos, 2)
         this.itemObject.setGenerator(itemRange)
     }
 
-    hitBomb()
+    hitBomb(player, bomb)
     {
-        if(item == "medkit")
+        if(item == "medkit"){
             this.emitter.emit('use item')
+            bomb.emit('destroy')
+        }
         else {
             this.physics.pause()
             this.player.obj.setTint(0xff0000)
@@ -289,7 +289,7 @@ class Scene1 extends Phaser.Scene {
     }
 
     resetGame(){
-        this.hasKey = false
+        hasKey = false
         gameOver = false
         this.time.paused = false
         lastScore += 1
@@ -309,7 +309,7 @@ class Scene1 extends Phaser.Scene {
 
             var cloud = this.extinguisherClouds.create(this.extinguisher.x, this.extinguisher.y, 'cloud')
             cloud.play("cloud_anim", true)
-            var velocity = Phaser.Math.Between(550, 650)
+            var velocity = Phaser.Math.Between(650, 850)
             this.physics.velocityFromRotation(angle, velocity, cloud.body.velocity)
             cloud.body.setDrag(1000)
 
@@ -327,7 +327,7 @@ class Scene1 extends Phaser.Scene {
     }
 
     exitLevel(){
-        if (this.hasKey)
+        if (hasKey)
             this.resetGame()
         else if (item == "axe"){
             if (this.cursors.space.isDown){
@@ -392,7 +392,7 @@ class Scene1 extends Phaser.Scene {
     setKey(pos=[0,0]){
         // Creates key object
         this.key = new Interactable(this, 'key', this.player.obj, ()=>{
-            this.hasKey = true
+            hasKey = true
         }, "chave_caindo", "porta_abrindo")
         this.key.setObject(pos, 2)
         this.key.setGenerator(keyRange)
@@ -429,20 +429,15 @@ class Scene1 extends Phaser.Scene {
         }
     }
 
-    resetStats(){
-        gameOver = false
-        level = 0
-        hasKey = false
-        timerDuration = 60000
-        keyRange = [timerDuration * 0.1, timerDuration * 0.75]
-        itemRange = [timerDuration * 0.2, timerDuration * 0.5]
-        cameraFXOffset = timerDuration/2
-        fogScaling = 3
-        velocity = 400
-        maxHealth = 400
-        bombFrequency = 500
-        bombOnContact = false
-        item = "fire"
+    increaseStats(){
+        timerDuration -= (10000 * difficultyIncrease * level)
+        
+        keyRange = [timerDuration * keyRangeVariation[0], timerDuration * keyRangeVariation[1]]
+        itemRange = [timerDuration * itemRangeVariation[0], timerDuration * itemRangeVariation[1]]
+        
+        bombFrequency -= (500 * difficultyIncrease * level)
+        maxHealth -= (100 * difficultyIncrease * level)
+        fogScaling -= (1000 * difficultyIncrease * level)
     }
     
 }

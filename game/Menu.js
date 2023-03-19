@@ -8,9 +8,11 @@ class Menu extends Phaser.Scene{
     }
 
     create(){
-        if(lastScore > highScore) 
+        var textColor = "#FFFFFF"
+        if(lastScore > highScore) {
+            textColor = "#FFFF00"
             highScore = lastScore;
-        lastScore = 0
+        }
         
         var background = this.add.image(400, 400,'main')
         background.x = background.displayWidth/2
@@ -35,9 +37,9 @@ class Menu extends Phaser.Scene{
                             .on('pointerout', () => this.infoButton.setStyle({ fill: '#FFF' }));
                         
         this.HighScoreText = this.add.text(100, 550,"Last Score: " + lastScore + '\nHigh Score: ' + highScore)
-                            .setStyle({ font: "italic 15px Arial",backgroundColor: '#113' });
+                            .setStyle({ font: "italic 15px Arial", color: textColor, backgroundColor: '#113' });
 
-
+        lastScore = 0
     }
 
     update(){
@@ -47,9 +49,16 @@ class Menu extends Phaser.Scene{
         gameOver = false
         level = 0
 
-        timerDuration = 20000
-        keyRange = [timerDuration * 0.1, timerDuration * 0.75]
-        cameraFXOffset = timerDuration/2
+        timerDuration = 40000
+        
+        hasKey = false
+        keyRangeVariation = [0.1, 0.2]
+        keyRange = [timerDuration * keyRangeVariation[0], timerDuration * keyRangeVariation[1]]
+
+        itemRangeVariation = [0.2, 0.5]
+        itemRange = [timerDuration * itemRangeVariation[0], timerDuration * itemRangeVariation[1]]
+
+        cameraFXOffset = timerDuration / 2
 
         difficultyIncrease = 0.05
 
@@ -57,12 +66,17 @@ class Menu extends Phaser.Scene{
         maxHealth = 100
         movementPenalty = 0.025
 
-        bombs;
+        fogScaling = 3
+
+        // "none" / "medkit" / "fire" / "axe"
+        item = "fire"
+
+        lastScore = 0
+
+        bombs = null
         bombFrequency = 500
-        bombOnContact = false
         
         this.scene.start("Scene1")
-        console.log("GAME START")
     }
 
     showInfo(){

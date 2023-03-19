@@ -57,10 +57,10 @@ class TileGenerator{
         }
 
         else if (name == 'large_table'){
-            // obj.setFrame(2)
-            // obj.setBodySize(22, 60)
-            obj.setFrame(1)
-            obj.setCircle(12, 4, 38)
+            obj.setFrame(2)
+            obj.setBodySize(22, 60).setImmovable(true)
+            // obj.setFrame(1)
+            // obj.setCircle(12, 4, 38)
         }
 
         else if (name == 'drawer'){

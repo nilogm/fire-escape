@@ -16,9 +16,11 @@ class Interactable{
 
     setGenerator(timerRange=[0,1]){
         var timer = new Timer(this.scene)
+        var time = Phaser.Math.Between(timerRange[0], timerRange[1])
+        console.log(time)
         timer.setTimer(()=>{
             this.showItem()
-        }, Phaser.Math.Between(timerRange[0], timerRange[1]))
+        }, time)
     }
 
     showItem(){
